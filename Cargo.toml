@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 clap = "~2.32"
 app_dirs = "~1.2"
+glob = "~0.3"
