@@ -1,4 +1,5 @@
 # Rusmux - tmux automation
 
-Build primaraly for compatibilty with
-[tmuxinator](https://github.com/tmuxinator/tmuxinator) yaml files.
+Built primarily to replace 
+[tmuxinator](https://github.com/tmuxinator/tmuxinator) while useing it's
+yaml files.
