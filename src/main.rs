@@ -4,27 +4,64 @@ extern crate clap;
 use app_dirs::{app_root, AppDataType, AppInfo};
 use clap::{app_from_crate, crate_authors, crate_name, AppSettings, Arg, SubCommand};
 use glob::glob;
-use std::path::Path;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::{Path, PathBuf};
+use yaml_rust::yaml;
 
 const APP_INFO: AppInfo = AppInfo {
     name: crate_name!(),
     author: crate_authors!(),
 };
 
-fn list_projects() {
-    let config_dir = app_root(AppDataType::UserConfig, &APP_INFO).unwrap();
+// Return config directory, which stores project files
+fn get_config_dir() -> PathBuf {
+    app_root(AppDataType::UserConfig, &APP_INFO).unwrap()
+}
 
-    let pattern = Path::new(&config_dir)
-        .join("*.yml")
+// Returns the path of a file/pattern inside the donfig dir
+fn get_config_path(pattern: &str) -> String {
+    let config_dir = get_config_dir();
+
+    Path::new(&config_dir)
+        .join(pattern)
         .into_os_string()
         .into_string()
-        .unwrap();
+        .unwrap()
+}
+
+// List the project files in the configuration directory
+fn list_projects() {
+    let pattern = get_config_path("*.yml");
 
     for project in glob(&pattern).expect("Failed to glob config dir") {
         match project {
-           Ok(path) =>  println!("{}", Path::new(&path).file_stem().unwrap().to_str().unwrap()),
-           Err(e) => println!("{:?}", e),
+            Ok(path) => println!(
+                "{}",
+                Path::new(&path).file_stem().unwrap().to_str().unwrap()
+            ),
+            Err(e) => println!("{:?}", e),
         }
+    }
+}
+
+// Parses the project file, creates the tmux session
+fn run_project(project_name: &str) {
+    println!("Starting project {}", project_name);
+
+    let mut filename = project_name.to_owned();
+    filename.push_str(".yml");
+
+    let project_file_path = get_config_path(&filename);
+    let mut project_file = File::open(project_file_path).unwrap();
+    let mut contents = String::new();
+    project_file.read_to_string(&mut contents).unwrap();
+
+    let entries = yaml::YamlLoader::load_from_str(&contents).unwrap();
+    println!("{:?}", entries);
+
+    for entry in &entries {
+        println!("{:?}", entry);
     }
 }
 
@@ -40,7 +77,7 @@ fn main() {
         .get_matches();
 
     if let Some(project_name) = matches.value_of("command") {
-        println!("{} project", project_name);
+        run_project(project_name);
     } else {
         match matches.subcommand_name() {
             Some("list") => list_projects(),
