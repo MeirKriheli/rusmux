@@ -9,7 +9,7 @@ pub struct Project {
 }
 
 impl Project {
-    pub fn new_from_hash(project_hash: &Yaml) -> Self {
+    pub fn new_from_yaml(project_hash: &Yaml) -> Self {
         let hash = project_hash.as_hash().unwrap();
         let pre = match hash.get(&Yaml::from_str("pre")) {
             Some(p) => p.to_owned().into_string(),
