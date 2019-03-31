@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate clap;
 
+mod project;
+
 use app_dirs::{app_root, AppDataType, AppInfo};
 use clap::{app_from_crate, crate_authors, crate_name, AppSettings, Arg, SubCommand};
 use glob::glob;
@@ -8,6 +10,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use yaml_rust::yaml;
+use project::Project;
 
 const APP_INFO: AppInfo = AppInfo {
     name: crate_name!(),
@@ -58,10 +61,10 @@ fn run_project(project_name: &str) {
     project_file.read_to_string(&mut contents).unwrap();
 
     let entries = yaml::YamlLoader::load_from_str(&contents).unwrap();
-    println!("{:?}", entries);
 
     for entry in &entries {
-        println!("{:?}", entry);
+        let project = Project::new_from_hash(entry);
+        println!("{:?}", project);
     }
 }
 
@@ -82,7 +85,7 @@ fn main() {
         match matches.subcommand_name() {
             Some("list") => list_projects(),
             None => println!("Please specify a command"),
-            _ => println!("TODO run the project"),
+            _ => println!("Should not get here"),
         }
     }
 }
