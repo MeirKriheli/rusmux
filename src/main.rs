@@ -63,8 +63,8 @@ fn run_project(project_name: &str) {
     let entries = yaml::YamlLoader::load_from_str(&contents).unwrap();
 
     for entry in &entries {
-        let project = Project::new_from_yaml(entry);
-        println!("{:?}", project);
+        let project = Project::new(entry);
+        println!("{:#?}", project);
     }
 }
 

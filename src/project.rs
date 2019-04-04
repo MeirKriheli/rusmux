@@ -6,11 +6,12 @@ pub struct Project {
     root: String,
     pre: Option<String>,
     pre_window: Option<String>,
+    windows: Vec<Window>,
 }
 
 impl Project {
-    pub fn new_from_yaml(project_hash: &Yaml) -> Self {
-        let hash = project_hash.as_hash().unwrap();
+    pub fn new(project: &Yaml) -> Self {
+        let hash = project.as_hash().unwrap();
         let pre = match hash.get(&Yaml::from_str("pre")) {
             Some(p) => p.to_owned().into_string(),
             _ => None,
@@ -19,11 +20,37 @@ impl Project {
             Some(c) => c.to_owned().into_string(),
             _ => None,
         };
+
+        let windows = match hash.get(&Yaml::from_str("windows")) {
+            Some(c) => c.to_owned().into_iter().map(|x| Window::new(&x)).collect(),
+            _ => Vec::new(),
+        };
         Project {
-            name: hash[&Yaml::from_str("project_name")].to_owned().into_string().unwrap(),
-            root: hash[&Yaml::from_str("project_root")].to_owned().into_string().unwrap(),
+            name: hash[&Yaml::from_str("project_name")]
+                .to_owned()
+                .into_string()
+                .unwrap(),
+            root: hash[&Yaml::from_str("project_root")]
+                .to_owned()
+                .into_string()
+                .unwrap(),
             pre: pre,
             pre_window: pre_window,
+            windows: windows,
+        }
+    }
+}
+
+#[derive(Debug)]
+struct Window {
+    name: String,
+}
+
+impl Window {
+    pub fn new(window: &Yaml) -> Self {
+        let (name, content) = window.as_hash().unwrap().iter().next().unwrap();
+        Window {
+            name: name.to_owned().into_string().unwrap(),
         }
     }
 }
