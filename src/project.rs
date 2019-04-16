@@ -35,6 +35,10 @@ impl Project {
             windows: windows,
         }
     }
+
+    pub fn get_commands(&self) -> Vec<String> {
+        vec![]
+    }
 }
 
 #[derive(Debug)]

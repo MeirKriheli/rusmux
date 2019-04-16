@@ -32,29 +32,37 @@ fn run_project(project_name: &str) {
     let entries = config::get_project_yaml(&project_name);
 
     for entry in entries {
-        let project = Project::new(&entry);
-        println!("{:#?}", project);
+        let proj = Project::new(&entry);
+        println!("{:#?}", proj);
+    }
+}
+
+// Parses the project file, prints shell commands
+fn debug_project(project_name: &str) {
+    let entries = config::get_project_yaml(&project_name);
+
+    for entry in entries {
+        let proj = Project::new(&entry);
+        let commands = proj.get_commands();
+        println!("{:#?}", commands);
     }
 }
 
 fn main() {
     let matches = app_from_crate!()
-        .setting(AppSettings::SubcommandsNegateReqs)
-        .arg(
-            Arg::with_name("command")
-                .help("Subcommand or project name")
-                .required(true),
-        )
+        .setting(AppSettings::AllowExternalSubcommands)
         .subcommand(SubCommand::with_name("list").about("List all projects"))
+        .subcommand(SubCommand::with_name("debug")
+            .about("Output shell commands for a project")
+            .arg(Arg::with_name("project").help("Project name").required(true)))
         .get_matches();
 
-    if let Some(project_name) = matches.value_of("command") {
-        run_project(project_name);
-    } else {
-        match matches.subcommand_name() {
-            Some("list") => list_projects(),
-            None => println!("Please specify a command"),
-            _ => println!("Should not get here"),
+    match matches.subcommand() {
+        ("list", Some(_)) => list_projects(),
+        ("debug", Some(debug_matches)) => {
+            debug_project(debug_matches.value_of("project").unwrap())
         }
+        (project_name, Some(_)) => run_project(project_name),
+        _ => println!("{}\nRerun with --help for more info", matches.usage()),
     }
 }
