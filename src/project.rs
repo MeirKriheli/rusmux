@@ -1,8 +1,10 @@
 use yaml_rust::yaml::{Hash, Yaml, YamlLoader};
 
+use super::command::Cmd;
+
 #[derive(Debug)]
 pub struct Project {
-    name: Option<String>,
+    name: String,
     root: Option<String>,
     pre: Option<String>,
     pre_window: Option<String>,
@@ -28,7 +30,7 @@ impl Project {
         };
 
         Project {
-            name: get_value(&hash, &"project_name"),
+            name: get_value(&hash, &"project_name").unwrap(),
             root: get_value(&hash, &"project_root"),
             pre: get_value(&hash, &"pre"),
             pre_window: get_value(&hash, &"pre_window"),
@@ -36,8 +38,28 @@ impl Project {
         }
     }
 
-    pub fn get_commands(&self) -> Vec<String> {
-        vec![]
+    pub fn get_commands(&self) -> Vec<Cmd> {
+        let mut commands = vec![Cmd::new(vec!["tmux", " start-server"], false, None)];
+
+        if let Some(root_dir) = &self.root {
+            commands.push(Cmd::new(vec!["cd", root_dir], false, None));
+        }
+
+        if let Some(pre_command) = &self.pre {
+            commands.push(Cmd::new(pre_command.split_whitespace().collect(), false, None));
+        }
+
+        let first_window_name = &self.windows[0].name;
+        commands.push(Cmd::new(
+            vec!["tmux", "new-session", "-d", "-s", self.name.as_str(), "-n", first_window_name],
+            true, Some("Create the session and the first window")
+        ));
+
+        for (i, window) in (&self.windows).into_iter().enumerate() {
+            println!("{}: {:?}", i, window);
+        }
+
+        commands
     }
 }
 

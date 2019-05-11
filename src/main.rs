@@ -2,6 +2,7 @@
 extern crate clap;
 
 mod config;
+mod command;
 mod project;
 
 use clap::{app_from_crate, crate_authors, crate_name, AppSettings, Arg, SubCommand};
