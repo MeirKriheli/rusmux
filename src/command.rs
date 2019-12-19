@@ -2,7 +2,7 @@
 pub struct Cmd<'a> {
     command: Vec<&'a str>,
     reset_tmux_env: bool,
-    as_debug: Option<&'a str>
+    as_debug: Option<&'a str>,
 }
 
 impl<'a> Cmd<'a> {
@@ -14,7 +14,5 @@ impl<'a> Cmd<'a> {
         }
     }
 
-    pub fn execute(&self) {
-        
-    }
+    pub fn execute(&self) {}
 }
