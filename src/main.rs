@@ -3,17 +3,18 @@ extern crate clap;
 
 mod command;
 mod config;
+mod error;
 mod project;
 
 use clap::{app_from_crate, crate_authors, crate_name, AppSettings, Arg, SubCommand};
+use error::AppError;
 use glob::glob;
+use project::Project;
 use std::path::Path;
 
-use project::Project;
-
 // List the project files in the configuration directory
-fn list_projects() {
-    let pattern = config::get_path(&"*.yml");
+fn list_projects() -> Result<(), AppError> {
+    let pattern = config::get_path(&"*.yml")?;
 
     for project in glob(&pattern).expect("Failed to glob config dir") {
         match project {
@@ -24,25 +25,29 @@ fn list_projects() {
             Err(e) => println!("{:?}", e),
         }
     }
+
+    Ok(())
 }
 
 // Parses the project file, creates the tmux session
-fn run_project(project_name: &str) {
+fn run_project(project_name: &str) -> Result<(), AppError> {
     println!("Starting project {}", project_name);
 
-    let entries = config::get_project_yaml(&project_name);
+    let entries = config::get_project_yaml(&project_name)?;
     let project = Project::from(entries);
     println!("{:#?}", project);
+    Ok(())
 }
 
 // Parses the project file, prints shell commands
-fn debug_project(project_name: &str) {
-    let entries = config::get_project_yaml(&project_name);
+fn debug_project(project_name: &str) -> Result<(), AppError> {
+    let entries = config::get_project_yaml(&project_name)?;
     let project = Project::from(entries);
     println!("{:#?}", project);
+    Ok(())
 }
 
-fn main() {
+fn main() -> Result<(), AppError> {
     let matches = app_from_crate!()
         .setting(AppSettings::AllowExternalSubcommands)
         .subcommand(SubCommand::with_name("list").about("List all projects"))
@@ -61,6 +66,6 @@ fn main() {
         ("list", Some(_)) => list_projects(),
         ("debug", Some(debug_matches)) => debug_project(debug_matches.value_of("project").unwrap()),
         (project_name, Some(_)) => run_project(project_name),
-        _ => println!("{}\nRerun with --help for more info", matches.usage()),
+        _ => Err(AppError::Message(format!("{}\nRerun with --help for more info", matches.usage()))),
     }
 }
