@@ -8,7 +8,7 @@ pub struct Project {
     project_root: Option<String>,
     pre: Option<String>,
     pre_window: Option<String>,
-    windows: Vec<BTreeMap<String, WindowContent>>,
+    windows: Option<Vec<BTreeMap<String, WindowContent>>>,
 }
 
 impl From<String> for Project {
@@ -28,4 +28,26 @@ struct WindowWithSetup {
 enum WindowContent {
     SingleCommand(String),
     WithSetup(WindowWithSetup),
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::Project;
+
+    #[test]
+    fn empty_project_test() {
+        let name = "meir";
+        let empty_project = format!("project_name: {}", name);
+
+        let project = Project::from(empty_project);
+        assert_eq!(project.project_name, name);
+        assert_eq!(project.windows, None);
+    }
+
+    #[test]
+    fn invalid_project_test() {
+        let empty_project: String = "".into();
+        let project = Project::from(empty_project);
+    }
 }
