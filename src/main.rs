@@ -11,6 +11,8 @@ use error::AppError;
 use glob::glob;
 use project::Project;
 use std::path::Path;
+use std::convert::TryFrom;
+
 
 // List the project files in the configuration directory
 fn list_projects() -> Result<(), AppError> {
@@ -34,7 +36,7 @@ fn run_project(project_name: &str) -> Result<(), AppError> {
     println!("Starting project {}", project_name);
 
     let entries = config::get_project_yaml(&project_name)?;
-    let project = Project::from(entries);
+    let project = Project::try_from(entries)?;
     println!("{:#?}", project);
     Ok(())
 }
@@ -42,7 +44,7 @@ fn run_project(project_name: &str) -> Result<(), AppError> {
 // Parses the project file, prints shell commands
 fn debug_project(project_name: &str) -> Result<(), AppError> {
     let entries = config::get_project_yaml(&project_name)?;
-    let project = Project::from(entries);
+    let project = Project::try_from(entries)?;
     println!("{:#?}", project);
     Ok(())
 }

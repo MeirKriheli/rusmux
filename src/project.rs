@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_yaml;
 use std::collections::BTreeMap;
+use std::convert::TryFrom;
+use crate::error::AppError;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Project {
@@ -11,9 +13,12 @@ pub struct Project {
     windows: Option<Vec<BTreeMap<String, WindowContent>>>,
 }
 
-impl From<String> for Project {
-    fn from(yaml: String) -> Self {
-        serde_yaml::from_str(&yaml).unwrap()
+impl TryFrom<String> for Project {
+
+    type Error = AppError;
+
+    fn try_from(yaml: String) -> Result<Self, Self::Error> {
+        serde_yaml::from_str(&yaml).map_err(|_| AppError::Message("Cannot parse yaml".into()))
     }
 }
 
@@ -34,13 +39,15 @@ enum WindowContent {
 #[cfg(test)]
 mod tests {
     use super::Project;
+    use std::convert::TryFrom;
+    use crate::error::AppError;
 
     #[test]
     fn empty_project_test() {
         let name = "meir";
         let empty_project = format!("project_name: {}", name);
 
-        let project = Project::from(empty_project);
+        let project = Project::try_from(empty_project).unwrap();
         assert_eq!(project.project_name, name);
         assert_eq!(project.windows, None);
     }
@@ -48,6 +55,7 @@ mod tests {
     #[test]
     fn invalid_project_test() {
         let empty_project: String = "".into();
-        let project = Project::from(empty_project);
+        let project = Project::try_from(empty_project);
+        assert!(project.is_err(), "Should return an error");
     }
 }
