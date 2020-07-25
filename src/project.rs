@@ -1,8 +1,9 @@
+use crate::error::AppError;
 use serde::{Deserialize, Serialize};
 use serde_yaml;
 use std::collections::BTreeMap;
 use std::convert::TryFrom;
-use crate::error::AppError;
+use std::env;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Project {
@@ -14,11 +15,30 @@ pub struct Project {
 }
 
 impl TryFrom<String> for Project {
-
     type Error = AppError;
 
     fn try_from(yaml: String) -> Result<Self, Self::Error> {
         serde_yaml::from_str(&yaml).map_err(|_| AppError::Message("Cannot parse yaml".into()))
+    }
+}
+
+impl Project {
+    /// Get the shell shebang, e.g.: "#!/bin/zsh"
+    fn get_shell_shebang(&self) -> Option<String> {
+        let shell = env::var("SHELL");
+
+        match shell {
+            Ok(shell) => Some(format!("#!{}", shell)),
+            _ => None,
+        }
+    }
+
+    pub fn debug(&self) -> String {
+        todo!()
+    }
+
+    pub fn execute(&self) -> Result<(), AppError> {
+        todo!()
     }
 }
 
@@ -34,7 +54,6 @@ enum WindowContent {
     SingleCommand(String),
     WithSetup(WindowWithSetup),
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -64,20 +83,26 @@ mod tests {
         let project_root: String = "/home/dummy/void".into();
         let window_name: String = "editor".into();
         let window_command: String = "vim".into();
-        let yaml = format!("project_name: {}
+        let yaml = format!(
+            "project_name: {}
 project_root: {}
 windows:
-  - {}: {}", name, project_root, window_name, window_command);
-          let project = Project::try_from(yaml).unwrap();
-          assert_eq!(project.project_name, name);
-          assert_eq!(project.project_root, Some(project_root));
-          assert!(project.windows.is_some(), "windows is none");
+  - {}: {}",
+            name, project_root, window_name, window_command
+        );
+        let project = Project::try_from(yaml).unwrap();
+        assert_eq!(project.project_name, name);
+        assert_eq!(project.project_root, Some(project_root));
+        assert!(project.windows.is_some(), "windows is none");
 
-          let windows = project.windows.unwrap();
-          assert_eq!(windows.len(), 1);
-          let first = windows.get(0).unwrap();
-          let window_names: Vec<_> = first.keys().collect();
-          assert_eq!(window_names, [&window_name]);
-          assert_eq!(first.get(&window_name).unwrap(), &WindowContent::SingleCommand(window_command));
+        let windows = project.windows.unwrap();
+        assert_eq!(windows.len(), 1);
+        let first = windows.get(0).unwrap();
+        let window_names: Vec<_> = first.keys().collect();
+        assert_eq!(window_names, [&window_name]);
+        assert_eq!(
+            first.get(&window_name).unwrap(),
+            &WindowContent::SingleCommand(window_command)
+        );
     }
 }

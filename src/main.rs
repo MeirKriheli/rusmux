@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate clap;
 
-mod command;
 mod config;
 mod error;
 mod project;
@@ -10,11 +9,10 @@ use clap::{app_from_crate, crate_authors, crate_name, AppSettings, Arg, SubComma
 use error::AppError;
 use glob::glob;
 use project::Project;
-use std::path::Path;
 use std::convert::TryFrom;
+use std::path::Path;
 
-
-// List the project files in the configuration directory
+/// List the project files in the configuration directory
 fn list_projects() -> Result<(), AppError> {
     let pattern = config::get_path(&"*.yml")?;
 
@@ -68,6 +66,9 @@ fn main() -> Result<(), AppError> {
         ("list", Some(_)) => list_projects(),
         ("debug", Some(debug_matches)) => debug_project(debug_matches.value_of("project").unwrap()),
         (project_name, Some(_)) => run_project(project_name),
-        _ => Err(AppError::Message(format!("{}\nRerun with --help for more info", matches.usage()))),
+        _ => Err(AppError::Message(format!(
+            "{}\nRerun with --help for more info",
+            matches.usage()
+        ))),
     }
 }
