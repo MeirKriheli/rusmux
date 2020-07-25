@@ -5,13 +5,20 @@ use std::collections::BTreeMap;
 use std::convert::TryFrom;
 use std::env;
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Project {
     project_name: String,
     project_root: Option<String>,
-    pre: Option<String>,
-    pre_window: Option<String>,
+    on_project_start: Option<StringOrList>,
+    pre_window: Option<StringOrList>,
     windows: Option<Vec<BTreeMap<String, WindowContent>>>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+enum StringOrList {
+    Single(String),
+    List(Vec<String>),
 }
 
 impl TryFrom<String> for Project {
