@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate clap;
 
+mod commands;
 mod config;
 mod error;
 mod project;
@@ -43,7 +44,8 @@ fn run_project(project_name: &str) -> Result<(), AppError> {
 fn debug_project(project_name: &str) -> Result<(), AppError> {
     let entries = config::get_project_yaml(&project_name)?;
     let project = Project::try_from(entries)?;
-    println!("{:#?}", project);
+    let commands = project.get_commands();
+    commands.into_iter().for_each(|c| println!("{}", c.debug()));
     Ok(())
 }
 

@@ -1,14 +1,14 @@
+use crate::commands::*;
 use crate::error::AppError;
 use serde::{Deserialize, Serialize};
 use serde_yaml;
 use std::collections::BTreeMap;
 use std::convert::TryFrom;
-use std::env;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Project {
-    project_name: String,
-    project_root: Option<String>,
+    pub project_name: String,
+    pub project_root: Option<String>,
     on_project_start: Option<StringOrList>,
     pre_window: Option<StringOrList>,
     windows: Option<Vec<BTreeMap<String, WindowContent>>>,
@@ -30,22 +30,9 @@ impl TryFrom<String> for Project {
 }
 
 impl Project {
-    /// Get the shell shebang, e.g.: "#!/bin/zsh"
-    fn get_shell_shebang(&self) -> Option<String> {
-        let shell = env::var("SHELL");
 
-        match shell {
-            Ok(shell) => Some(format!("#!{}", shell)),
-            _ => None,
-        }
-    }
-
-    pub fn debug(&self) -> String {
-        todo!()
-    }
-
-    pub fn execute(&self) -> Result<(), AppError> {
-        todo!()
+    pub fn get_commands(&self) -> Vec<Box<dyn Command + '_>> {
+        vec![Box::new(SessionStartCommand::new(&self))]
     }
 }
 
