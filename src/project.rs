@@ -9,14 +9,14 @@ use std::convert::TryFrom;
 pub struct Project {
     pub project_name: String,
     pub project_root: Option<String>,
-    on_project_start: Option<StringOrList>,
+    pub on_project_start: Option<StringOrList>,
     pre_window: Option<StringOrList>,
     windows: Option<Vec<BTreeMap<String, WindowContent>>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
-enum StringOrList {
+pub enum StringOrList {
     Single(String),
     List(Vec<String>),
 }
@@ -33,6 +33,11 @@ impl Project {
 
     pub fn get_commands(&self) -> Vec<Box<dyn Command + '_>> {
         vec![Box::new(SessionStartCommand::new(&self))]
+    }
+
+    pub fn debug(&self) {
+        let commands = self.get_commands();
+        commands.into_iter().for_each(|c| println!("{}", c.debug()));
     }
 }
 
