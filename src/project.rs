@@ -27,7 +27,7 @@ impl TryFrom<String> for Project {
     type Error = AppError;
 
     fn try_from(yaml: String) -> Result<Self, Self::Error> {
-        serde_yaml::from_str(&yaml).map_err(|_| AppError::Message("Cannot parse yaml".into()))
+        serde_yaml::from_str(&yaml).map_err(|e| AppError::Message(format!("Cannot parse yaml: {}",e )))
     }
 }
 
