@@ -26,6 +26,20 @@ impl<'a> SessionStartCommand<'a> {
             _ => None,
         }
     }
+
+    fn get_root_command(&self) -> Option<String> {
+        self.project
+            .project_root
+            .as_ref()
+            .map(|dir| format!("cd {}", dir))
+    }
+
+    fn get_project_start_commands(&self) -> Option<String> {
+        self.project.on_project_start.as_ref().map(|commands| {
+            let joined = commands.join("\n");
+            format!("\n# Run on_project_start command(s)\n{}", joined)
+        })
+    }
 }
 
 impl<'a> Command for SessionStartCommand<'a> {
@@ -34,12 +48,17 @@ impl<'a> Command for SessionStartCommand<'a> {
     }
 
     fn debug(&self) -> String {
-        let mut result = vec![
+        let result = vec![
             self.get_shell_shebang(),
             Some("\ntmux start-server\n".into()),
-            self.project.project_root.as_ref().map(|dir| format!("cd {}", dir)),
+            self.get_root_command(),
+            self.get_project_start_commands(),
         ];
 
-        result.into_iter().filter_map(|c| c).collect::<Vec<String>>().join("\n")
+        result
+            .into_iter()
+            .filter_map(|c| c)
+            .collect::<Vec<String>>()
+            .join("\n")
     }
 }
