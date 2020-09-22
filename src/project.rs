@@ -1,24 +1,20 @@
 use crate::commands::*;
+use crate::deserializer;
 use crate::error::AppError;
 use serde::{Deserialize, Serialize};
 use serde_yaml;
 use std::collections::BTreeMap;
 use std::convert::TryFrom;
-use std::fmt;
-use std::marker::PhantomData;
-
-use serde::de;
-use serde::de::Deserializer;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Project {
     pub project_name: String,
     pub project_root: Option<String>,
     #[serde(default)]
-    #[serde(deserialize_with = "string_or_seq_string")]
+    #[serde(deserialize_with = "deserializer::deserialize_optional_vec_or_string")]
     pub on_project_start: Option<Vec<String>>,
     #[serde(default)]
-    #[serde(deserialize_with = "string_or_seq_string")]
+    #[serde(deserialize_with = "deserializer::deserialize_optional_vec_or_string")]
     pre_window: Option<Vec<String>>,
     windows: Option<Vec<BTreeMap<String, WindowContent>>>,
 }
@@ -27,7 +23,8 @@ impl TryFrom<String> for Project {
     type Error = AppError;
 
     fn try_from(yaml: String) -> Result<Self, Self::Error> {
-        serde_yaml::from_str(&yaml).map_err(|e| AppError::Message(format!("Cannot parse yaml: {}",e )))
+        serde_yaml::from_str(&yaml)
+            .map_err(|e| AppError::Message(format!("Cannot parse yaml: {}", e)))
     }
 }
 
@@ -40,37 +37,6 @@ impl Project {
         let commands = self.get_commands();
         commands.into_iter().for_each(|c| println!("{}", c.debug()));
     }
-}
-
-fn string_or_seq_string<'de, D>(deserializer: D) -> Result<Option<Vec<String>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    struct StringOrVec(PhantomData<Option<Vec<String>>>);
-
-    impl<'de> de::Visitor<'de> for StringOrVec {
-        type Value = Option<Vec<String>>;
-
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_str("string or list of strings")
-        }
-
-        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-        where
-            E: de::Error,
-        {
-            Ok(Some(vec![value.to_owned()]))
-        }
-
-        fn visit_seq<S>(self, visitor: S) -> Result<Self::Value, S::Error>
-        where
-            S: de::SeqAccess<'de>,
-        {
-            Deserialize::deserialize(de::value::SeqAccessDeserializer::new(visitor))
-        }
-    }
-
-    deserializer.deserialize_any(StringOrVec(PhantomData))
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

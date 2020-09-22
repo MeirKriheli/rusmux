@@ -3,6 +3,7 @@ extern crate clap;
 
 mod commands;
 mod config;
+mod deserializer;
 mod error;
 mod project;
 
