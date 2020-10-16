@@ -1,5 +1,5 @@
 use crate::commands::*;
-use crate::deserializer;
+use crate::stringorvec;
 use crate::error::AppError;
 use crate::window::Window;
 use serde::{Deserialize, Serialize};
@@ -11,10 +11,10 @@ pub struct Project {
     pub project_name: String,
     pub project_root: Option<String>,
     #[serde(default)]
-    #[serde(deserialize_with = "deserializer::deserialize_optional_vec_or_string")]
+    #[serde(deserialize_with = "stringorvec::deserialize_optional_vec_or_string")]
     pub on_project_start: Option<Vec<String>>,
     #[serde(default)]
-    #[serde(deserialize_with = "deserializer::deserialize_optional_vec_or_string")]
+    #[serde(deserialize_with = "stringorvec::deserialize_optional_vec_or_string")]
     pre_window: Option<Vec<String>>,
     windows: Option<Vec<Window>>,
 }

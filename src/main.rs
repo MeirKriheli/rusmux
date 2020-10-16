@@ -3,7 +3,7 @@ extern crate clap;
 
 mod commands;
 mod config;
-mod deserializer;
+mod stringorvec;
 mod error;
 mod project;
 mod window;
