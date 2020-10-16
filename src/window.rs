@@ -5,9 +5,9 @@ use std::fmt;
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Window {
-    name: String,
-    layout: Option<String>,
-    panes: Vec<Option<String>>,
+    pub name: String,
+    pub layout: Option<String>,
+    pub panes: Vec<Option<String>>,
 }
 
 impl<'de> Deserialize<'de> for Window {

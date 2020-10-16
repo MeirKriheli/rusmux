@@ -1,6 +1,6 @@
 use crate::commands::*;
-use crate::stringorvec;
 use crate::error::AppError;
+use crate::stringorvec;
 use crate::window::Window;
 use serde::{Deserialize, Serialize};
 use serde_yaml;
@@ -39,22 +39,9 @@ impl Project {
     }
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-struct WindowWithSetup {
-    layout: Option<String>,
-    panes: Vec<Option<String>>,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-#[serde(untagged)]
-enum WindowContent {
-    SingleCommand(String),
-    WithSetup(WindowWithSetup),
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{Project, WindowContent};
+    use super::Project;
     use std::convert::TryFrom;
 
     #[test]
@@ -95,11 +82,7 @@ windows:
         let windows = project.windows.unwrap();
         assert_eq!(windows.len(), 1);
         let first = windows.get(0).unwrap();
-        let window_names: Vec<_> = first.keys().collect();
-        assert_eq!(window_names, [&window_name]);
-        assert_eq!(
-            first.get(&window_name).unwrap(),
-            &WindowContent::SingleCommand(window_command)
-        );
+        assert_eq!(first.name, window_name);
+        assert_eq!(first.panes, vec![Some(window_command)]);
     }
 }
