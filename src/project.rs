@@ -1,9 +1,9 @@
 use crate::commands::*;
 use crate::deserializer;
 use crate::error::AppError;
+use crate::window::Window;
 use serde::{Deserialize, Serialize};
 use serde_yaml;
-use std::collections::BTreeMap;
 use std::convert::TryFrom;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -16,7 +16,7 @@ pub struct Project {
     #[serde(default)]
     #[serde(deserialize_with = "deserializer::deserialize_optional_vec_or_string")]
     pre_window: Option<Vec<String>>,
-    windows: Option<Vec<BTreeMap<String, WindowContent>>>,
+    windows: Option<Vec<Window>>,
 }
 
 impl TryFrom<String> for Project {

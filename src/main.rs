@@ -6,6 +6,7 @@ mod config;
 mod deserializer;
 mod error;
 mod project;
+mod window;
 
 use clap::{app_from_crate, crate_authors, crate_name, AppSettings, Arg, SubCommand};
 use error::AppError;
