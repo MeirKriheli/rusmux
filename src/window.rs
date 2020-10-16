@@ -1,6 +1,8 @@
+use crate::error::AppError;
 use serde::de::{self, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
-use serde_yaml::Value;
+use serde_yaml::{self, Value};
+use std::convert::TryFrom;
 use std::fmt;
 
 #[derive(Debug, PartialEq, Serialize)]
@@ -8,6 +10,15 @@ pub struct Window {
     pub name: String,
     pub layout: Option<String>,
     pub panes: Vec<Option<String>>,
+}
+
+impl TryFrom<String> for Window {
+    type Error = AppError;
+
+    fn try_from(yaml: String) -> Result<Self, Self::Error> {
+        serde_yaml::from_str(&yaml)
+            .map_err(|e| AppError::Message(format!("Cannot parse yaml: {}", e)))
+    }
 }
 
 impl<'de> Deserialize<'de> for Window {
@@ -40,7 +51,7 @@ impl<'de> Visitor<'de> for WindowVisitor {
         };
 
         match val {
-            Value::Null => (),
+            Value::Null => w.panes.push(None),
             Value::String(value) => w.panes.push(Some(value)),
             Value::Mapping(map) => {
                 w.layout = map
@@ -60,5 +71,47 @@ impl<'de> Visitor<'de> for WindowVisitor {
             _ => return Err("invalid window struct").map_err(de::Error::custom),
         }
         Ok(w)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn windows_test() {
+        let windows_strings = vec![
+            "test: #",
+            "test2 window: vim",
+            "window3:\n  panes:\n    - vim\n    - #\n    - npm run serve",
+            "window4:\n  layout: main-vertical\n  panes:\n    - vim\n    - #\n    - npm run serve",
+        ];
+
+        let windows: Vec<Window> = windows_strings
+            .iter()
+            .map(|yaml| Window::try_from(yaml.to_string()).unwrap())
+            .collect();
+
+        assert_eq!(windows[0].name, "test");
+        assert_eq!(windows[0].layout, None);
+        assert_eq!(windows[0].panes, vec![None]);
+
+        assert_eq!(windows[1].name, "test2 window");
+        assert_eq!(windows[1].layout, None);
+        assert_eq!(windows[1].panes, vec![Some("vim".into())]);
+
+        assert_eq!(windows[2].name, "window3");
+        assert_eq!(windows[2].layout, None);
+        assert_eq!(
+            windows[2].panes,
+            vec![Some("vim".into()), None, Some("npm run serve".into())]
+        );
+
+        assert_eq!(windows[3].name, "window4");
+        assert_eq!(windows[3].layout, Some("main-vertical".into()));
+        assert_eq!(
+            windows[3].panes,
+            vec![Some("vim".into()), None, Some("npm run serve".into())]
+        );
     }
 }
