@@ -1,10 +1,13 @@
-use crate::commands::*;
 use crate::error::AppError;
 use crate::stringorvec;
 use crate::window::Window;
 use serde::{Deserialize, Serialize};
 use serde_yaml;
 use std::convert::TryFrom;
+use std::env;
+use std::fmt;
+
+const TMUX: &str = "tmux";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Project {
@@ -28,14 +31,37 @@ impl TryFrom<String> for Project {
     }
 }
 
-impl Project {
-    pub fn get_commands(&self) -> Vec<Box<dyn Command + '_>> {
-        vec![Box::new(SessionStartCommand::new(&self))]
-    }
+impl fmt::Display for Project {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let shebang = env::var("SHELL").map(|x| format!("#!{}\n#", x)).ok();
+        let first_window_name_param = match self.windows.as_ref() {
+            Some(windows) => windows
+                .first()
+                .map(|w| format!(" -s {}", w.name))
+                .unwrap_or("".into()),
+            _ => "".into(),
+        };
 
-    pub fn debug(&self) {
-        let commands = self.get_commands();
-        commands.into_iter().for_each(|c| println!("{}", c.debug()));
+        let commands = vec![
+            shebang,
+            Some(format!("# {} rusmux project\n", self.project_name)),
+            Some(format!("{} start server\n", TMUX)),
+            self.project_root.as_ref().map(|x| format!("cd {}\n", x)),
+            self.on_project_start
+                .as_ref()
+                .map(|x| format!("# Run on_project_start command(s)\n{}\n", x.join("\n"))),
+            Some(format!(
+                "# Create new session and first window\nTMUX= {} new-session -d -s {}{}",
+                TMUX, self.project_name, first_window_name_param
+            )),
+        ];
+
+        let joined = commands
+            .into_iter()
+            .filter_map(|c| c)
+            .collect::<Vec<String>>()
+            .join("\n");
+        write!(f, "{}", joined)
     }
 }
 
