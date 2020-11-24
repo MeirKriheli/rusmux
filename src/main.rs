@@ -5,6 +5,7 @@ mod config;
 mod error;
 mod project;
 mod stringorvec;
+mod tmux;
 mod window;
 
 use clap::{app_from_crate, crate_authors, crate_name, AppSettings, Arg, SubCommand};
@@ -13,6 +14,7 @@ use glob::glob;
 use project::Project;
 use std::convert::TryFrom;
 use std::path::Path;
+use tmux::TmuxProject;
 
 /// List the project files in the configuration directory
 fn list_projects() -> Result<(), AppError> {
@@ -45,7 +47,9 @@ fn run_project(project_name: &str) -> Result<(), AppError> {
 fn debug_project(project_name: &str) -> Result<(), AppError> {
     let entries = config::get_project_yaml(&project_name)?;
     let project = Project::try_from(entries)?;
-    println!("{}", project);
+    let tmux = TmuxProject::new(&project)?;
+    // println!("{}", project);
+    println!("{}", tmux);
     Ok(())
 }
 

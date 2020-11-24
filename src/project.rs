@@ -4,10 +4,6 @@ use crate::window::Window;
 use serde::{Deserialize, Serialize};
 use serde_yaml;
 use std::convert::TryFrom;
-use std::env;
-use std::fmt;
-
-const TMUX: &str = "tmux";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Project {
@@ -18,8 +14,8 @@ pub struct Project {
     pub on_project_start: Option<Vec<String>>,
     #[serde(default)]
     #[serde(deserialize_with = "stringorvec::deserialize_optional_vec_or_string")]
-    pre_window: Option<Vec<String>>,
-    windows: Option<Vec<Window>>,
+    pub pre_window: Option<Vec<String>>,
+    pub windows: Option<Vec<Window>>,
 }
 
 impl TryFrom<String> for Project {
@@ -28,40 +24,6 @@ impl TryFrom<String> for Project {
     fn try_from(yaml: String) -> Result<Self, Self::Error> {
         serde_yaml::from_str(&yaml)
             .map_err(|e| AppError::Message(format!("Cannot parse yaml: {}", e)))
-    }
-}
-
-impl fmt::Display for Project {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let shebang = env::var("SHELL").map(|x| format!("#!{}\n#", x)).ok();
-        let first_window_name_param = match self.windows.as_ref() {
-            Some(windows) => windows
-                .first()
-                .map(|w| format!(" -s {}", w.name))
-                .unwrap_or("".into()),
-            _ => "".into(),
-        };
-
-        let commands = vec![
-            shebang,
-            Some(format!("# {} rusmux project\n", self.project_name)),
-            Some(format!("{} start server\n", TMUX)),
-            self.project_root.as_ref().map(|x| format!("cd {}\n", x)),
-            self.on_project_start
-                .as_ref()
-                .map(|x| format!("# Run on_project_start command(s)\n{}\n", x.join("\n"))),
-            Some(format!(
-                "# Create new session and first window\nTMUX= {} new-session -d -s {}{}",
-                TMUX, self.project_name, first_window_name_param
-            )),
-        ];
-
-        let joined = commands
-            .into_iter()
-            .filter_map(|c| c)
-            .collect::<Vec<String>>()
-            .join("\n");
-        write!(f, "{}", joined)
     }
 }
 
