@@ -1,19 +1,20 @@
 use crate::error::AppError;
 use crate::project::Project;
+use clap::crate_name;
 use std::env;
 use std::fmt;
 use std::process::Command;
 
-const TMUX: &str = "tmux";
+const TMUX_BIN: &str = "tmux";
 const READ_ERROR: &str = "Cannot get tmux config options";
 
 #[derive(Debug)]
-struct TmuxOptions {
+struct Tmux {
     base_index: usize,
     pane_base_index: usize,
 }
 
-impl TmuxOptions {
+impl Tmux {
     fn new(base_index: usize, pane_base_index: usize) -> Self {
         Self {
             base_index,
@@ -22,7 +23,7 @@ impl TmuxOptions {
     }
 
     fn new_from_config() -> Result<Self, AppError> {
-        let output = Command::new(TMUX)
+        let output = Command::new(TMUX_BIN)
             .args(&[
                 "start",
                 ";",
@@ -59,49 +60,141 @@ impl TmuxOptions {
     }
 }
 
+/// Basic trait for commands ran by [TmuxProject]. Each command implements [fmt::Display] to
+/// show the shell commands instead of executing them.
+trait ProjectCommand: fmt::Display {
+    fn run(&self) -> Result<(), AppError>;
+}
+
+/// Start the server and cd to the work directory if available
+struct ServerStartCommand<'a> {
+    project_name: &'a str,
+    project_root: &'a Option<String>,
+}
+
+impl<'a> ProjectCommand for ServerStartCommand<'a> {
+    fn run(&self) -> Result<(), AppError> {
+        todo!()
+    }
+}
+
+impl<'a> fmt::Display for ServerStartCommand<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let shebang = env::var("SHELL").map(|x| format!("#!{}", x)).ok();
+        let cd_command = match self.project_root {
+            Some(project_root) => format!("\ncd {}", project_root),
+            None => "".into(),
+        };
+
+        write!(
+            f,
+            "{}\n\
+             #\n\
+             # {} {} project\n\n\
+             {} start-server\
+             {}",
+            shebang.unwrap_or("".into()),
+            crate_name!(),
+            self.project_name,
+            TMUX_BIN,
+            cd_command
+        )
+    }
+}
+
+/// Run on_project_start commands
+struct OnProjectStartCommand<'a> {
+    on_project_start: &'a Option<Vec<String>>,
+}
+
+impl<'a> ProjectCommand for OnProjectStartCommand<'a> {
+    fn run(&self) -> Result<(), AppError> {
+        todo!()
+    }
+}
+
+impl<'a> fmt::Display for OnProjectStartCommand<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let commands = self
+            .on_project_start
+            .as_ref()
+            .map_or(String::from(""), |v| v.join("\n"));
+        write!(f, "# Run on_project_start command(s)\n{}", commands)
+    }
+}
+
+/// Start the new tmux session, and cd again (for tmux < 1.9 compat)
+struct SessionStartCommand<'a> {
+    tmux: &'a Tmux,
+    project_name: &'a str,
+    first_window_name: Option<&'a str>,
+}
+
+impl<'a> ProjectCommand for SessionStartCommand<'a> {
+    fn run(&self) -> Result<(), AppError> {
+        todo!()
+    }
+}
+
+impl<'a> fmt::Display for SessionStartCommand<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let window_param = self
+            .first_window_name
+            .map_or("".into(), |n| format!(" -n {}", n));
+        write!(
+            f,
+            "# Create new session and first window\n\
+            TMUX= {} new-session -d -s {}{}",
+            TMUX_BIN, self.project_name, window_param
+        )
+    }
+}
+
 #[derive(Debug)]
 pub struct TmuxProject<'a> {
-    tmux_options: TmuxOptions,
+    tmux: Tmux,
     project: &'a Project,
 }
 
 impl<'a> TmuxProject<'a> {
     pub fn new(project: &'a Project) -> Result<Self, AppError> {
-        let tmux_options = TmuxOptions::new_from_config()?;
-        Ok(TmuxProject {
-            tmux_options,
-            project,
-        })
+        let tmux = Tmux::new_from_config()?;
+        Ok(TmuxProject { tmux, project })
+    }
+
+    fn get_commands(&'a self) -> Vec<Box<dyn ProjectCommand + 'a>> {
+        let project_name = &self.project.project_name;
+
+        let first_window_name = self
+            .project
+            .windows
+            .as_ref()
+            .and_then(|windows| windows.first())
+            .map(|w| w.name.as_str());
+
+        vec![
+            Box::new(ServerStartCommand {
+                project_name,
+                project_root: &self.project.project_root,
+            }),
+            Box::new(OnProjectStartCommand {
+                on_project_start: &self.project.on_project_start,
+            }),
+            Box::new(SessionStartCommand {
+                tmux: &self.tmux,
+                project_name,
+                first_window_name,
+            }),
+        ]
     }
 }
+
 impl<'a> fmt::Display for TmuxProject<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let shebang = env::var("SHELL").map(|x| format!("#!{}\n#", x)).ok();
-        let first_window_name_param = match self.project.windows.as_ref() {
-            Some(windows) => windows
-                .first()
-                .map(|w| format!(" -s {}", w.name))
-                .unwrap_or("".into()),
-            _ => "".into(),
-        };
-
-        let commands = vec![
-            shebang,
-            Some(format!("# {} rusmux project\n", self.project.project_name)),
-            Some(format!("{} start server\n", TMUX)),
-            self.project.project_root.as_ref().map(|x| format!("cd {}\n", x)),
-            self.project.on_project_start
-                .as_ref()
-                .map(|x| format!("# Run on_project_start command(s)\n{}\n", x.join("\n"))),
-            Some(format!(
-                "# Create new session and first window\nTMUX= {} new-session -d -s {}{}",
-                TMUX, self.project.project_name, first_window_name_param
-            )),
-        ];
-
-        let joined = commands
+        let joined = self
+            .get_commands()
             .into_iter()
-            .filter_map(|c| c)
+            .map(|x| format!("{}\n", x))
             .collect::<Vec<String>>()
             .join("\n");
         write!(f, "{}", joined)
