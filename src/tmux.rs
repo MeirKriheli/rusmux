@@ -27,7 +27,7 @@ impl Tmux {
     /// the installed tmux config.
     fn new_from_config() -> Result<Self, AppError> {
         let output = Command::new(TMUX_BIN)
-            .args(&[
+            .args([
                 "start",
                 ";",
                 "show",
@@ -46,9 +46,8 @@ impl Tmux {
             .map_err(|_| AppError::Message(READ_ERROR.into()))?
             .lines()
             .map(|line| {
-                line.split(" ")
-                    .skip(1)
-                    .next()
+                line.split(' ')
+                    .nth(1)
                     .unwrap()
                     .parse::<usize>()
                     .unwrap()
@@ -122,7 +121,7 @@ impl<'a> fmt::Display for ServerStartCommand<'a> {
              # {} {} project\n\n\
              {} start-server\
              {}",
-            shebang.unwrap_or("".into()),
+            shebang.unwrap_or_else(|| "".into()),
             crate_name!(),
             self.project_name,
             TMUX_BIN,

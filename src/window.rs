@@ -5,7 +5,7 @@ use serde_yaml::{self, Value};
 use std::convert::TryFrom;
 use std::fmt;
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Window {
     pub name: String,
     pub layout: Option<String>,

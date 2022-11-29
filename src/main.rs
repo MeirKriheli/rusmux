@@ -18,7 +18,7 @@ use tmux::TmuxProject;
 
 /// List the project files in the configuration directory
 fn list_projects() -> Result<(), AppError> {
-    let pattern = config::get_path(&"*.yml")?;
+    let pattern = config::get_path("*.yml")?;
 
     for project in glob(&pattern).expect("Failed to glob config dir") {
         match project {
@@ -37,7 +37,7 @@ fn list_projects() -> Result<(), AppError> {
 fn run_project(project_name: &str) -> Result<(), AppError> {
     println!("Starting project {}", project_name);
 
-    let entries = config::get_project_yaml(&project_name)?;
+    let entries = config::get_project_yaml(project_name)?;
     let project = Project::try_from(entries)?;
     println!("{:#?}", project);
     Ok(())
