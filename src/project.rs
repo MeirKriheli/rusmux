@@ -2,7 +2,6 @@ use crate::error::AppError;
 use crate::stringorvec;
 use crate::window::Window;
 use serde::{Deserialize, Serialize};
-use serde_yaml;
 use std::convert::TryFrom;
 
 #[derive(Debug, Serialize, Deserialize)]

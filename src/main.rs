@@ -8,7 +8,7 @@ mod stringorvec;
 mod tmux;
 mod window;
 
-use clap::{app_from_crate, crate_authors, crate_name, AppSettings, Arg, SubCommand};
+use clap::{command, Arg, Command};
 use error::AppError;
 use glob::glob;
 use project::Project;
@@ -45,7 +45,7 @@ fn run_project(project_name: &str) -> Result<(), AppError> {
 
 // Parses the project file, prints shell commands
 fn debug_project(project_name: &str) -> Result<(), AppError> {
-    let entries = config::get_project_yaml(&project_name)?;
+    let entries = config::get_project_yaml(project_name)?;
     let project = Project::try_from(entries)?;
     let tmux = TmuxProject::new(&project)?;
     // println!("{}", project);
@@ -54,27 +54,27 @@ fn debug_project(project_name: &str) -> Result<(), AppError> {
 }
 
 fn main() -> Result<(), AppError> {
-    let matches = app_from_crate!()
-        .setting(AppSettings::AllowExternalSubcommands)
-        .subcommand(SubCommand::with_name("list").about("List all projects"))
+    let matches = command!()
+        .arg_required_else_help(true)
+        .subcommand_negates_reqs(true)
+        .arg(Arg::new("project").help("Project name").required(true))
+        .subcommand(Command::new("list").about("List all projects"))
         .subcommand(
-            SubCommand::with_name("debug")
+            Command::new("debug")
                 .about("Output shell commands for a project")
-                .arg(
-                    Arg::with_name("project")
-                        .help("Project name")
-                        .required(true),
-                ),
+                .arg(Arg::new("project").help("Project name").required(true)),
         )
         .get_matches();
 
+    if let Some(project_name) = matches.get_one::<String>("project") {
+        return run_project(project_name);
+    }
+
     match matches.subcommand() {
-        ("list", Some(_)) => list_projects(),
-        ("debug", Some(debug_matches)) => debug_project(debug_matches.value_of("project").unwrap()),
-        (project_name, Some(_)) => run_project(project_name),
-        _ => Err(AppError::Message(format!(
-            "{}\nRerun with --help for more info",
-            matches.usage()
-        ))),
+        Some(("list", _)) => list_projects(),
+        Some(("debug", debug_matches)) => {
+            debug_project(debug_matches.get_one::<String>("project").unwrap())
+        }
+        _ => unreachable!(),
     }
 }

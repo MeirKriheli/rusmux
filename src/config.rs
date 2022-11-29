@@ -1,23 +1,15 @@
-use app_dirs::{app_root, AppDataType, AppInfo};
+use directories::ProjectDirs;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use super::error::AppError;
 
-const APP_INFO: AppInfo = AppInfo {
-    name: crate_name!(),
-    author: crate_authors!(),
-};
-
-// Return config directory, which stores project files
-fn get_dir() -> Result<PathBuf, AppError> {
-    Ok(app_root(AppDataType::UserConfig, &APP_INFO)?)
-}
-
-// Returns the path of a file/pattern inside the donfig dir
+// Returns the path of a file/pattern inside the config dir
 pub fn get_path(pattern: &str) -> Result<String, AppError> {
-    let config_dir = get_dir()?;
+    let proj_dirs =
+        ProjectDirs::from("org", crate_authors!(), crate_name!()).ok_or(AppError::Path)?;
+    let config_dir = proj_dirs.config_dir();
 
     match Path::new(&config_dir).join(pattern).to_str() {
         None => Err(AppError::Path),

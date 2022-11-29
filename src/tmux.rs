@@ -15,6 +15,7 @@ struct Tmux {
 }
 
 impl Tmux {
+    /// Create a new `Tmux` instance with the proposed `base-index` and `pane-base-index`.
     fn new(base_index: usize, pane_base_index: usize) -> Self {
         Self {
             base_index,
@@ -22,6 +23,8 @@ impl Tmux {
         }
     }
 
+    /// Create a new `Tmux` instance getting the values of `base-index` and `pane-base-index` from
+    /// the installed tmux config.
     fn new_from_config() -> Result<Self, AppError> {
         let output = Command::new(TMUX_BIN)
             .args(&[
@@ -57,6 +60,32 @@ impl Tmux {
         }
 
         Ok(Self::new(values[0], values[1]))
+    }
+
+    /// Get the send key command as Vec<String>. `window_index` and `pane_index` should be zero
+    /// base, the function will adjust them by the values of `base_index` and `pane_base_index`.
+    fn get_send_keys_command<S: AsRef<str>>(
+        &self,
+        command: S,
+        session_name: S,
+        window_index: usize,
+        pane_index: Option<usize>,
+    ) -> Vec<String> {
+        let formatted_pane_index =
+            pane_index.map_or("".into(), |idx| format!(".{}", idx + self.pane_base_index));
+        vec![
+            TMUX_BIN.into(),
+            "send-keys".into(),
+            "-t".into(),
+            format!(
+                "{}:{}{}",
+                session_name.as_ref(),
+                window_index + self.base_index,
+                formatted_pane_index
+            ),
+            command.as_ref().into(),
+            "C-m".into(),
+        ]
     }
 }
 
@@ -125,7 +154,6 @@ impl<'a> fmt::Display for OnProjectStartCommand<'a> {
 
 /// Start the new tmux session, and cd again (for tmux < 1.9 compat)
 struct SessionStartCommand<'a> {
-    tmux: &'a Tmux,
     project_name: &'a str,
     first_window_name: Option<&'a str>,
 }
@@ -148,6 +176,15 @@ impl<'a> fmt::Display for SessionStartCommand<'a> {
             TMUX_BIN, self.project_name, window_param
         )
     }
+}
+
+/// Send Keys command
+struct SendKeysCommand<'a> {
+    tmux: &'a Tmux,
+    command: &'a str,
+    session_name: &'a str,
+    window_index: usize,
+    pane_index: Option<usize>,
 }
 
 #[derive(Debug)]
@@ -181,7 +218,6 @@ impl<'a> TmuxProject<'a> {
                 on_project_start: &self.project.on_project_start,
             }),
             Box::new(SessionStartCommand {
-                tmux: &self.tmux,
                 project_name,
                 first_window_name,
             }),
