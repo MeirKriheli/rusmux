@@ -82,12 +82,6 @@ impl Tmux {
     }
 }
 
-/// Basic trait for commands ran by [TmuxProject]. Each command implements [fmt::Display] to
-/// show the shell commands instead of executing them.
-trait ProjectCommand: fmt::Display {
-    fn run(&self) -> Result<(), AppError>;
-}
-
 enum Commands<'a> {
     /// Start the server and cd to the work directory if available
     Server {
