@@ -55,31 +55,6 @@ impl Tmux {
         Ok(Self::new(values[0], values[1]))
     }
 
-    /// Get the send key command as Vec<String>. `window_index` and `pane_index` should be zero
-    /// base, the function will adjust them by the values of `base_index` and `pane_base_index`.
-    fn get_send_keys_command<S: AsRef<str>>(
-        &self,
-        command: S,
-        session_name: S,
-        window_index: usize,
-        pane_index: Option<usize>,
-    ) -> Vec<String> {
-        let formatted_pane_index =
-            pane_index.map_or("".into(), |idx| format!(".{}", idx + self.pane_base_index));
-        vec![
-            TMUX_BIN.into(),
-            "send-keys".into(),
-            "-t".into(),
-            format!(
-                "{}:{}{}",
-                session_name.as_ref(),
-                window_index + self.base_index,
-                formatted_pane_index
-            ),
-            command.as_ref().into(),
-            "C-m".into(),
-        ]
-    }
 }
 
 enum Commands<'a> {
@@ -96,6 +71,13 @@ enum Commands<'a> {
     Session {
         project_name: &'a str,
         first_window_name: Option<&'a str>,
+    },
+    /// Send Keys command
+    SendKeys {
+        command: String,
+        session_name: &'a str,
+        window_index: usize,
+        pane_index: Option<usize>,
     },
 }
 
@@ -149,11 +131,31 @@ impl<'a> Commands<'a> {
             TMUX_BIN, project_name, window_param
         )
     }
+
+    fn fmt_send_keys(
+        f: &mut fmt::Formatter,
+        command: &str,
+        session_name: &str,
+        window_index: usize,
+        pane_index: Option<usize>,
+    ) -> fmt::Result {
+        let formatted_pane_index = pane_index.map_or("".into(), |idx| format!(".{}", idx));
+        let escaped = shell_escape::escape(command.into());
+        write!(
+            f,
+            "{} send-keys -t {}:{}{} {} C-m",
+            TMUX_BIN, session_name, window_index, formatted_pane_index, escaped
+        )
+    }
+
+    fn run(&self) -> Result<(), AppError> {
+        unimplemented!()
+    }
 }
 
 impl<'a> fmt::Display for Commands<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
+        match self {
             Commands::Server {
                 project_name,
                 project_root,
@@ -164,18 +166,15 @@ impl<'a> fmt::Display for Commands<'a> {
             Commands::Session {
                 project_name,
                 first_window_name,
-            } => Commands::fmt_session_command(f, project_name, first_window_name),
+            } => Commands::fmt_session_command(f, project_name, *first_window_name),
+            Commands::SendKeys {
+                command,
+                session_name,
+                window_index,
+                pane_index,
+            } => Commands::fmt_send_keys(f, command, session_name, *window_index, *pane_index),
         }
     }
-}
-
-/// Send Keys command
-struct SendKeysCommand<'a> {
-    tmux: &'a Tmux,
-    command: &'a str,
-    session_name: &'a str,
-    window_index: usize,
-    pane_index: Option<usize>,
 }
 
 #[derive(Debug)]
@@ -200,7 +199,7 @@ impl<'a> TmuxProject<'a> {
             .and_then(|windows| windows.first())
             .map(|w| w.name.as_str());
 
-        vec![
+        let mut commands = vec![
             Commands::Server {
                 project_name,
                 project_root: &self.project.project_root,
@@ -212,7 +211,25 @@ impl<'a> TmuxProject<'a> {
                 project_name,
                 first_window_name,
             },
-        ]
+        ];
+
+        if let Some(project_root) = &self.project.project_root {
+            commands.push(Commands::SendKeys {
+                command: format!("cd {}", &project_root),
+                session_name: project_name,
+                window_index: self.tmux.base_index,
+                pane_index: None,
+            })
+        }
+
+        commands
+    }
+
+    pub fn run(&self) -> Result<(), AppError> {
+        for cmd in self.get_commands() {
+            cmd.run()?;
+        }
+        Ok(())
     }
 }
 
@@ -220,7 +237,7 @@ impl<'a> fmt::Display for TmuxProject<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let joined = self
             .get_commands()
-            .into_iter()
+            .iter()
             .map(|x| format!("{}\n", x))
             .collect::<Vec<String>>()
             .join("\n");
