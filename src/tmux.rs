@@ -54,7 +54,6 @@ impl Tmux {
 
         Ok(Self::new(values[0], values[1]))
     }
-
 }
 
 enum Commands<'a> {
@@ -78,6 +77,7 @@ enum Commands<'a> {
         session_name: &'a str,
         window_index: usize,
         pane_index: Option<usize>,
+        comment: Option<&'a str>,
     },
 }
 
@@ -138,13 +138,15 @@ impl<'a> Commands<'a> {
         session_name: &str,
         window_index: usize,
         pane_index: Option<usize>,
+        comment: Option<&str>,
     ) -> fmt::Result {
         let formatted_pane_index = pane_index.map_or("".into(), |idx| format!(".{}", idx));
+        let comment = comment.map_or("".into(), |c| format!("# {}\n", c));
         let escaped = shell_escape::escape(command.into());
         write!(
             f,
-            "{} send-keys -t {}:{}{} {} C-m",
-            TMUX_BIN, session_name, window_index, formatted_pane_index, escaped
+            "{}{} send-keys -t {}:{}{} {} C-m",
+            comment, TMUX_BIN, session_name, window_index, formatted_pane_index, escaped
         )
     }
 
@@ -172,7 +174,15 @@ impl<'a> fmt::Display for Commands<'a> {
                 session_name,
                 window_index,
                 pane_index,
-            } => Commands::fmt_send_keys(f, command, session_name, *window_index, *pane_index),
+                comment,
+            } => Commands::fmt_send_keys(
+                f,
+                command,
+                session_name,
+                *window_index,
+                *pane_index,
+                *comment,
+            ),
         }
     }
 }
@@ -219,6 +229,9 @@ impl<'a> TmuxProject<'a> {
                 session_name: project_name,
                 window_index: self.tmux.base_index,
                 pane_index: None,
+                comment: Some(
+                    "Manually switch to root directory if required to support tmux < 1.9",
+                ),
             })
         }
 
