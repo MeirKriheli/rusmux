@@ -79,6 +79,12 @@ enum Commands<'a> {
         pane_index: Option<usize>,
         comment: Option<&'a str>,
     },
+    NewWindow {
+        session_name: &'a str,
+        window_name: &'a str,
+        window_index: usize,
+        project_root: &'a Option<String>,
+    },
 }
 
 impl<'a> Commands<'a> {
@@ -150,6 +156,24 @@ impl<'a> Commands<'a> {
         )
     }
 
+    fn fmt_new_window(
+        f: &mut fmt::Formatter,
+        session_name: &str,
+        window_name: &str,
+        window_index: usize,
+        project_root: &Option<String>,
+    ) -> fmt::Result {
+        let cd_root = match project_root {
+            Some(dir) => format!(" -c {}", dir),
+            None => "".into(),
+        };
+        write!(
+            f,
+            "# Create \"{}\" window \n{} new-window{} -t {}:{} -n {}",
+            window_name, TMUX_BIN, cd_root, session_name, window_index, window_name
+        )
+    }
+
     fn run(&self) -> Result<(), AppError> {
         unimplemented!()
     }
@@ -183,6 +207,14 @@ impl<'a> fmt::Display for Commands<'a> {
                 *pane_index,
                 *comment,
             ),
+            Commands::NewWindow {
+                session_name,
+                window_name,
+                window_index,
+                project_root,
+            } => {
+                Commands::fmt_new_window(f, session_name, window_name, *window_index, project_root)
+            }
         }
     }
 }
@@ -233,6 +265,18 @@ impl<'a> TmuxProject<'a> {
                     "Manually switch to root directory if required to support tmux < 1.9",
                 ),
             })
+        }
+
+        if let Some(windows) = self.project.windows.as_ref() {
+            // first window was created with the session, skip it
+            windows.iter().enumerate().skip(1).for_each(|(idx, w)| {
+                commands.push(Commands::NewWindow {
+                    session_name: project_name,
+                    window_name: w.name.as_ref(),
+                    window_index: idx + self.tmux.base_index,
+                    project_root: &self.project.project_root,
+                })
+            });
         }
 
         commands
