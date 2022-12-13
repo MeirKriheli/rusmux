@@ -395,13 +395,13 @@ impl<'a> TmuxProject<'a> {
             }
         });
 
-        commands.push(Commands::SelectLayout {
-            session_name: project_name,
-            window_index: window_idx,
-            layout: &w.layout,
-        });
-
         if w.panes.len() > 1 {
+            commands.push(Commands::SelectLayout {
+                session_name: project_name,
+                window_index: window_idx,
+                layout: &w.layout,
+            });
+
             commands.push(Commands::SelectPane {
                 session_name: project_name,
                 window_index: window_idx,
