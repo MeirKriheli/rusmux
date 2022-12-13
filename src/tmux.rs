@@ -400,6 +400,14 @@ impl<'a> TmuxProject<'a> {
             window_index: window_idx,
             layout: &w.layout,
         });
+
+        if w.panes.len() > 1 {
+            commands.push(Commands::SelectPane {
+                session_name: project_name,
+                window_index: window_idx,
+                pane_index: self.tmux.pane_base_index,
+            })
+        }
         commands
     }
 
