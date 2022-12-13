@@ -85,6 +85,11 @@ enum Commands<'a> {
         window_index: usize,
         project_root: &'a Option<String>,
     },
+    SplitWindow {
+        session_name: &'a str,
+        window_index: usize,
+        project_root: &'a Option<String>,
+    },
 }
 
 impl<'a> Commands<'a> {
@@ -156,6 +161,13 @@ impl<'a> Commands<'a> {
         )
     }
 
+    fn get_cd_root_flag(project_root: &Option<String>) -> String {
+        match project_root {
+            Some(dir) => format!(" -c {}", dir),
+            None => "".into(),
+        }
+    }
+
     fn fmt_new_window(
         f: &mut fmt::Formatter,
         session_name: &str,
@@ -163,14 +175,25 @@ impl<'a> Commands<'a> {
         window_index: usize,
         project_root: &Option<String>,
     ) -> fmt::Result {
-        let cd_root = match project_root {
-            Some(dir) => format!(" -c {}", dir),
-            None => "".into(),
-        };
+        let cd_root = Commands::get_cd_root_flag(project_root);
         write!(
             f,
             "# Create \"{}\" window \n{} new-window{} -t {}:{} -n {}",
             window_name, TMUX_BIN, cd_root, session_name, window_index, window_name
+        )
+    }
+
+    fn fmt_split_window(
+        f: &mut fmt::Formatter,
+        session_name: &str,
+        window_index: usize,
+        project_root: &Option<String>,
+    ) -> Result<(), fmt::Error> {
+        let cd_root = Commands::get_cd_root_flag(project_root);
+        write!(
+            f,
+            "{} splitw{} -t {}:{}",
+            TMUX_BIN, cd_root, session_name, window_index
         )
     }
 
@@ -215,6 +238,11 @@ impl<'a> fmt::Display for Commands<'a> {
             } => {
                 Commands::fmt_new_window(f, session_name, window_name, *window_index, project_root)
             }
+            Commands::SplitWindow {
+                session_name,
+                window_index,
+                project_root,
+            } => Commands::fmt_split_window(f, session_name, *window_index, project_root),
         }
     }
 }
