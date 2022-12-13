@@ -1,5 +1,6 @@
 use crate::error::AppError;
 use crate::project::Project;
+use crate::window::Window;
 use clap::crate_name;
 use std::env;
 use std::fmt;
@@ -89,6 +90,11 @@ enum Commands<'a> {
         session_name: &'a str,
         window_index: usize,
         project_root: &'a Option<String>,
+    },
+    SelectLayout {
+        session_name: &'a str,
+        window_index: usize,
+        layout: &'a str,
     },
 }
 
@@ -197,6 +203,19 @@ impl<'a> Commands<'a> {
         )
     }
 
+    fn fmt_select_layout(
+        f: &mut fmt::Formatter,
+        session_name: &str,
+        window_index: usize,
+        layout: &str,
+    ) -> Result<(), fmt::Error> {
+        write!(
+            f,
+            "{} select-layout -t {}:{} {}",
+            TMUX_BIN, session_name, window_index, layout
+        )
+    }
+
     fn run(&self) -> Result<(), AppError> {
         unimplemented!()
     }
@@ -243,6 +262,11 @@ impl<'a> fmt::Display for Commands<'a> {
                 window_index,
                 project_root,
             } => Commands::fmt_split_window(f, session_name, *window_index, project_root),
+            Commands::SelectLayout {
+                session_name,
+                window_index,
+                layout,
+            } => Commands::fmt_select_layout(f, session_name, *window_index, layout),
         }
     }
 }
@@ -292,21 +316,67 @@ impl<'a> TmuxProject<'a> {
                 comment: Some(
                     "Manually switch to root directory if required to support tmux < 1.9",
                 ),
-            })
-        }
-
-        if let Some(windows) = self.project.windows.as_ref() {
-            // first window was created with the session, skip it
-            windows.iter().enumerate().skip(1).for_each(|(idx, w)| {
-                commands.push(Commands::NewWindow {
-                    session_name: project_name,
-                    window_name: w.name.as_ref(),
-                    window_index: idx + self.tmux.base_index,
-                    project_root: &self.project.project_root,
-                })
             });
         }
 
+        if let Some(windows) = self.project.windows.as_ref() {
+            windows.iter().enumerate().for_each(|(idx, w)| {
+                commands.extend(self.get_window_commands(idx, w));
+            });
+        }
+
+        commands
+    }
+
+    fn get_window_commands(&'a self, idx: usize, w: &'a Window) -> Vec<Commands> {
+        let mut commands = Vec::new();
+        let project_name = &self.project.project_name;
+
+        let window_idx = idx + self.tmux.base_index;
+        if idx > 0 {
+            commands.push(Commands::NewWindow {
+                session_name: project_name,
+                window_name: w.name.as_ref(),
+                window_index: window_idx,
+                project_root: &self.project.project_root,
+            });
+        }
+        w.panes.iter().enumerate().for_each(|(pane_idx, pane)| {
+            let pane_with_base_idx = pane_idx + self.tmux.pane_base_index;
+            if idx > 0 {
+                commands.push(Commands::SplitWindow {
+                    session_name: project_name,
+                    window_index: pane_with_base_idx,
+                    project_root: &self.project.project_root,
+                })
+            }
+            if let Some(pre_window) = &self.project.pre_window {
+                pre_window.iter().for_each(|cmd| {
+                    commands.push(Commands::SendKeys {
+                        command: cmd.clone(),
+                        session_name: project_name,
+                        window_index: window_idx,
+                        pane_index: Some(pane_with_base_idx),
+                        comment: None,
+                    });
+                })
+            }
+            if let Some(pane_cmd) = pane {
+                commands.push(Commands::SendKeys {
+                    command: pane_cmd.clone(),
+                    session_name: project_name,
+                    window_index: window_idx,
+                    pane_index: Some(pane_with_base_idx),
+                    comment: None,
+                });
+            }
+        });
+
+        commands.push(Commands::SelectLayout {
+            session_name: project_name,
+            window_index: window_idx,
+            layout: &w.layout,
+        });
         commands
     }
 

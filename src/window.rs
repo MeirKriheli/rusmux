@@ -8,7 +8,8 @@ use std::fmt;
 #[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Window {
     pub name: String,
-    pub layout: Option<String>,
+    #[serde(default = "tiled")]
+    pub layout: String,
     pub panes: Vec<Option<String>>,
 }
 
@@ -46,7 +47,7 @@ impl<'de> Visitor<'de> for WindowVisitor {
         let (key, val) = map.next_entry::<String, Value>().unwrap().unwrap();
         let mut w = Window {
             name: key,
-            layout: None,
+            layout: "tiled".into(),
             panes: vec![],
         };
 
@@ -56,7 +57,8 @@ impl<'de> Visitor<'de> for WindowVisitor {
             Value::Mapping(map) => {
                 w.layout = map
                     .get(&Value::String("layout".into()))
-                    .map(|v| v.as_str().unwrap().into());
+                    .map(|v| v.as_str().unwrap().into())
+                    .unwrap_or_else(|| "tiled".into());
 
                 if let Some(Value::Sequence(panes)) = map.get(&Value::String("panes".into())) {
                     for pane in panes {
@@ -93,22 +95,22 @@ mod tests {
             .collect();
 
         assert_eq!(windows[0].name, "test");
-        assert_eq!(windows[0].layout, None);
+        assert_eq!(windows[0].layout, "tiled".to_string());
         assert_eq!(windows[0].panes, vec![None]);
 
         assert_eq!(windows[1].name, "test2 window");
-        assert_eq!(windows[1].layout, None);
+        assert_eq!(windows[1].layout, "tiled".to_string());
         assert_eq!(windows[1].panes, vec![Some("vim".into())]);
 
         assert_eq!(windows[2].name, "window3");
-        assert_eq!(windows[2].layout, None);
+        assert_eq!(windows[2].layout, "tiled".to_string());
         assert_eq!(
             windows[2].panes,
             vec![Some("vim".into()), None, Some("npm run serve".into())]
         );
 
         assert_eq!(windows[3].name, "window4");
-        assert_eq!(windows[3].layout, Some("main-vertical".into()));
+        assert_eq!(windows[3].layout, "main-vertical".to_string());
         assert_eq!(
             windows[3].panes,
             vec![Some("vim".into()), None, Some("npm run serve".into())]
