@@ -405,6 +405,11 @@ impl<'a> TmuxProject<'a> {
             session_name: project_name,
         });
 
+        commands.push(Commands::ProjectEvent {
+            event_name: "exit",
+            on_event: &self.project.on_project_exit,
+        });
+
         commands
     }
 
