@@ -366,6 +366,18 @@ impl<'a> TmuxProject<'a> {
             windows.iter().enumerate().for_each(|(idx, w)| {
                 commands.extend(self.get_window_commands(idx, w));
             });
+
+            // select 1st window and 1st pane
+            commands.push(Commands::SelectWindow {
+                session_name: project_name,
+                window_index: self.tmux.base_index,
+            });
+
+            commands.push(Commands::SelectPane {
+                session_name: project_name,
+                window_index: self.tmux.base_index,
+                pane_index: self.tmux.pane_base_index,
+            })
         }
 
         commands
