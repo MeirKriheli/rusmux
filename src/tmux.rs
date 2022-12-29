@@ -106,6 +106,9 @@ enum Commands<'a> {
         window_index: usize,
         pane_index: usize,
     },
+    AttachSession {
+        session_name: &'a str,
+    },
 }
 
 impl<'a> Commands<'a> {
@@ -254,6 +257,15 @@ impl<'a> Commands<'a> {
         )
     }
 
+    fn fmt_attach_session(f: &mut fmt::Formatter, session_name: &str) -> Result<(), fmt::Error> {
+        write!(
+            f,
+            "if [ -z \"$TMUX\" ]; then\n  {} -u attach-session -t {}\n\
+            else\n  {} -u switch-client -t {}\nfi",
+            TMUX_BIN, session_name, TMUX_BIN, session_name
+        )
+    }
+
     fn run(&self) -> Result<(), AppError> {
         unimplemented!()
     }
@@ -315,6 +327,9 @@ impl<'a> fmt::Display for Commands<'a> {
                 window_index,
                 pane_index,
             } => Commands::fmt_select_pane(f, session_name, *window_index, *pane_index),
+            Commands::AttachSession { session_name } => {
+                Commands::fmt_attach_session(f, session_name)
+            }
         }
     }
 }
@@ -385,6 +400,10 @@ impl<'a> TmuxProject<'a> {
                 pane_index: self.tmux.pane_base_index,
             })
         }
+
+        commands.push(Commands::AttachSession {
+            session_name: project_name,
+        });
 
         commands
     }
