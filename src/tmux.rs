@@ -63,9 +63,10 @@ enum Commands<'a> {
         project_name: &'a str,
         project_root: &'a Option<String>,
     },
-    /// Run on_project_start commands
-    Project {
-        on_project_start: &'a Option<Vec<String>>,
+    /// Run on_project_<event> commands
+    ProjectEvent {
+        event_name: &'a str,
+        on_event: &'a Option<Vec<String>>,
     },
     /// Start the new tmux session, and cd again (for tmux < 1.9 compat)
     Session {
@@ -136,12 +137,15 @@ impl<'a> Commands<'a> {
 
     fn fmt_project_command(
         f: &mut fmt::Formatter<'_>,
-        on_project_start: &'a Option<Vec<String>>,
+        event_name: &'a str,
+        on_event: &'a Option<Vec<String>>,
     ) -> fmt::Result {
-        let commands = on_project_start
-            .as_ref()
-            .map_or(String::from(""), |v| v.join("\n"));
-        write!(f, "# Run on_project_start command(s)\n{}", commands)
+        let commands = on_event.as_ref().map_or(String::from(""), |v| v.join("\n"));
+        write!(
+            f,
+            "# Run on_project_{} command(s)\n{}",
+            event_name, commands
+        )
     }
 
     fn fmt_session_command(
@@ -262,9 +266,10 @@ impl<'a> fmt::Display for Commands<'a> {
                 project_name,
                 project_root,
             } => Commands::fmt_server_command(f, project_name, project_root),
-            Commands::Project { on_project_start } => {
-                Commands::fmt_project_command(f, on_project_start)
-            }
+            Commands::ProjectEvent {
+                event_name,
+                on_event,
+            } => Commands::fmt_project_command(f, event_name, on_event),
             Commands::Session {
                 project_name,
                 first_window_name,
@@ -341,8 +346,9 @@ impl<'a> TmuxProject<'a> {
                 project_name,
                 project_root: &self.project.project_root,
             },
-            Commands::Project {
-                on_project_start: &self.project.on_project_start,
+            Commands::ProjectEvent {
+                event_name: "start",
+                on_event: &self.project.on_project_start,
             },
             Commands::Session {
                 project_name,
