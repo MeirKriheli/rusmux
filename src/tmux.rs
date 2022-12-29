@@ -96,6 +96,10 @@ enum Commands<'a> {
         window_index: usize,
         layout: &'a str,
     },
+    SelectWindow {
+        session_name: &'a str,
+        window_index: usize,
+    },
     SelectPane {
         session_name: &'a str,
         window_index: usize,
@@ -221,6 +225,18 @@ impl<'a> Commands<'a> {
         )
     }
 
+    fn fmt_select_window(
+        f: &mut fmt::Formatter,
+        session_name: &str,
+        window_index: usize,
+    ) -> Result<(), fmt::Error> {
+        write!(
+            f,
+            "{} select-window -t {}:{}",
+            TMUX_BIN, session_name, window_index
+        )
+    }
+
     fn fmt_select_pane(
         f: &mut fmt::Formatter,
         session_name: &str,
@@ -285,6 +301,10 @@ impl<'a> fmt::Display for Commands<'a> {
                 window_index,
                 layout,
             } => Commands::fmt_select_layout(f, session_name, *window_index, layout),
+            Commands::SelectWindow {
+                session_name,
+                window_index,
+            } => Commands::fmt_select_window(f, session_name, *window_index),
             Commands::SelectPane {
                 session_name,
                 window_index,
