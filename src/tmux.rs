@@ -79,7 +79,7 @@ enum Commands<'a> {
         session_name: &'a str,
         window_index: usize,
         pane_index: Option<usize>,
-        comment: Option<&'a str>,
+        comment: Option<String>,
     },
     NewWindow {
         session_name: &'a str,
@@ -146,7 +146,7 @@ impl<'a> Commands<'a> {
         let commands = on_event.as_ref().map_or(String::from(""), |v| v.join("\n"));
         write!(
             f,
-            "# Run on_project_{} command(s)\n{}",
+            "\n# Run on_project_{} command(s)\n{}",
             event_name, commands
         )
     }
@@ -159,7 +159,7 @@ impl<'a> Commands<'a> {
         let window_param = first_window_name.map_or("".into(), |n| format!(" -n {}", n));
         write!(
             f,
-            "# Create new session and first window\n\
+            "\n# Create new session and first window\n\
             TMUX= {} new-session -d -s {}{}",
             TMUX_BIN, project_name, window_param
         )
@@ -174,7 +174,7 @@ impl<'a> Commands<'a> {
         comment: Option<&str>,
     ) -> fmt::Result {
         let formatted_pane_index = pane_index.map_or("".into(), |idx| format!(".{}", idx));
-        let comment = comment.map_or("".into(), |c| format!("# {}\n", c));
+        let comment = comment.map_or("".into(), |c| format!("\n# {}\n", c));
         let escaped = shell_escape::escape(command.into());
         write!(
             f,
@@ -200,7 +200,7 @@ impl<'a> Commands<'a> {
         let cd_root = Commands::get_cd_root_flag(project_root);
         write!(
             f,
-            "# Create \"{}\" window \n{} new-window{} -t {}:{} -n {}",
+            "\n# Create \"{}\" window \n{} new-window{} -t {}:{} -n {}",
             window_name, TMUX_BIN, cd_root, session_name, window_index, window_name
         )
     }
@@ -260,7 +260,7 @@ impl<'a> Commands<'a> {
     fn fmt_attach_session(f: &mut fmt::Formatter, session_name: &str) -> Result<(), fmt::Error> {
         write!(
             f,
-            "if [ -z \"$TMUX\" ]; then\n  {} -u attach-session -t {}\n\
+            "\nif [ -z \"$TMUX\" ]; then\n  {} -u attach-session -t {}\n\
             else\n  {} -u switch-client -t {}\nfi",
             TMUX_BIN, session_name, TMUX_BIN, session_name
         )
@@ -298,7 +298,7 @@ impl<'a> fmt::Display for Commands<'a> {
                 session_name,
                 *window_index,
                 *pane_index,
-                *comment,
+                comment.as_ref().map(|x| &**x),
             ),
             Commands::NewWindow {
                 session_name,
@@ -378,7 +378,7 @@ impl<'a> TmuxProject<'a> {
                 window_index: self.tmux.base_index,
                 pane_index: None,
                 comment: Some(
-                    "Manually switch to root directory if required to support tmux < 1.9",
+                    "Manually switch to root directory if required to support tmux < 1.9".into(),
                 ),
             });
         }
@@ -436,13 +436,18 @@ impl<'a> TmuxProject<'a> {
                 })
             }
             if let Some(pre_window) = &self.project.pre_window {
-                pre_window.iter().for_each(|cmd| {
+                pre_window.iter().enumerate().for_each(|(cmd_idx, cmd)| {
+                    let comment = if idx == 0 && pane_idx == 0 && cmd_idx == 0 {
+                        Some(format!("Continue \"{}\" window", w.name))
+                    } else {
+                        None
+                    };
                     commands.push(Commands::SendKeys {
                         command: cmd.clone(),
                         session_name: project_name,
                         window_index: window_idx,
                         pane_index: Some(pane_with_base_idx),
-                        comment: None,
+                        comment,
                     });
                 })
             }
@@ -486,7 +491,7 @@ impl<'a> fmt::Display for TmuxProject<'a> {
         let joined = self
             .get_commands()
             .iter()
-            .map(|x| format!("{}\n", x))
+            .map(|x| format!("{}", x))
             .collect::<Vec<String>>()
             .join("\n");
         write!(f, "{}", joined)
