@@ -1,6 +1,6 @@
 [package]
 name = "rusmux"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Meir Kriheli <mkriheli@gmail.com>"]
 edition = "2021"
 
