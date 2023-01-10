@@ -3,6 +3,7 @@ use crate::project::Project;
 use crate::window::Window;
 use clap::crate_name;
 use std::env;
+use std::env::set_current_dir;
 use std::fmt;
 use std::process::Command;
 
@@ -57,6 +58,7 @@ impl Tmux {
     }
 }
 
+#[derive(Debug)]
 enum Commands<'a> {
     /// Start the server and cd to the work directory if available
     Server {
@@ -266,8 +268,25 @@ impl<'a> Commands<'a> {
         )
     }
 
+    fn run_server_command(project_root: &'a Option<String>) -> Result<(), AppError> {
+        Command::new(TMUX_BIN).arg("start-server").status()?;
+        if let Some(root_dir) = project_root {
+            set_current_dir(shellexpand::full(root_dir)?.as_ref())?;
+        }
+        Ok(())
+    }
+
     fn run(&self) -> Result<(), AppError> {
-        unimplemented!()
+        match self {
+            Commands::Server {
+                project_name: _,
+                project_root,
+            } => Commands::run_server_command(project_root),
+            _ => Err(AppError::Message(format!(
+                "Command {:?} not implemented yet",
+                &self
+            ))),
+        }
     }
 }
 

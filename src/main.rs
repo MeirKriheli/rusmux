@@ -48,7 +48,6 @@ fn debug_project(project_name: &str) -> Result<(), AppError> {
     let entries = config::get_project_yaml(project_name)?;
     let project = Project::try_from(entries)?;
     let tmux = TmuxProject::new(&project)?;
-    // println!("{}", project);
     println!("{}", tmux);
     Ok(())
 }
@@ -64,6 +63,11 @@ fn main() -> Result<(), AppError> {
                 .about("Output shell commands for a project")
                 .arg(Arg::new("project").help("Project name").required(true)),
         )
+        .subcommand(
+            Command::new("run")
+                .about("Run the project commands")
+                .arg(Arg::new("project").help("Project name").required(true)),
+        )
         .get_matches();
 
     if let Some(project_name) = matches.get_one::<String>("project") {
@@ -74,6 +78,9 @@ fn main() -> Result<(), AppError> {
         Some(("list", _)) => list_projects(),
         Some(("debug", debug_matches)) => {
             debug_project(debug_matches.get_one::<String>("project").unwrap())
+        }
+        Some(("run", run_matches)) => {
+            run_project(run_matches.get_one::<String>("project").unwrap())
         }
         _ => unreachable!(),
     }
