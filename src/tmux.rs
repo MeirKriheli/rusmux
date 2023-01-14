@@ -2,6 +2,7 @@ use crate::error::AppError;
 use crate::project::Project;
 use crate::window::Window;
 use clap::crate_name;
+use shlex::Shlex;
 use std::env;
 use std::env::set_current_dir;
 use std::fmt;
@@ -268,6 +269,23 @@ impl<'a> Commands<'a> {
         )
     }
 
+    fn run(&self) -> Result<(), AppError> {
+        match self {
+            Commands::Server {
+                project_name: _,
+                project_root,
+            } => Commands::run_server_command(project_root),
+            Commands::ProjectEvent {
+                event_name: _,
+                on_event,
+            } => Commands::run_project_event(on_event),
+            _ => Err(AppError::Message(format!(
+                "Command {:?} not implemented yet",
+                &self
+            ))),
+        }
+    }
+
     fn run_server_command(project_root: &'a Option<String>) -> Result<(), AppError> {
         Command::new(TMUX_BIN).arg("start-server").status()?;
         if let Some(root_dir) = project_root {
@@ -276,17 +294,22 @@ impl<'a> Commands<'a> {
         Ok(())
     }
 
-    fn run(&self) -> Result<(), AppError> {
-        match self {
-            Commands::Server {
-                project_name: _,
-                project_root,
-            } => Commands::run_server_command(project_root),
-            _ => Err(AppError::Message(format!(
-                "Command {:?} not implemented yet",
-                &self
-            ))),
+    fn run_project_event(on_event: &Option<Vec<String>>) -> Result<(), AppError> {
+        if let Some(commands) = on_event {
+            for command in commands {
+                let mut parts = Shlex::new(command);
+                let cmd_opt = parts.next();
+                if let Some(cmd) = cmd_opt {
+                    let res = Command::new(cmd)
+                        .args(parts.collect::<Vec<_>>())
+                        .status();
+                    if res.is_err() {
+                        eprintln!("Error executing command {}", command);
+                    }
+                }
+            }
         }
+        Ok(())
     }
 }
 
