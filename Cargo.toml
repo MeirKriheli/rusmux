@@ -5,13 +5,13 @@ authors = ["Meir Kriheli <mkriheli@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-clap = { version = "~4.0", features = ["cargo"]}
+clap = { version = "~4.0", features = ["cargo"] }
+directories = "4.0.1"
 glob = "~0.3"
-yaml-rust = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
-thiserror = "1.0"
-directories = "4.0.1"
 shell-escape = "0.1.5"
 shellexpand = "3.0.0"
 shlex = "1.1.0"
+thiserror = "1.0"
+yaml-rust = "0.4"
