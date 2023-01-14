@@ -279,10 +279,14 @@ impl<'a> Commands<'a> {
                 event_name: _,
                 on_event,
             } => Commands::run_project_event(on_event),
-            _ => Err(AppError::Message(format!(
-                "Command {:?} not implemented yet",
-                &self
-            ))),
+            Commands::Session { project_name, first_window_name } => todo!(),
+            Commands::SendKeys { command, session_name, window_index, pane_index, comment } => todo!(),
+            Commands::NewWindow { session_name, window_name, window_index, project_root } => todo!(),
+            Commands::SplitWindow { session_name, window_index, project_root } => todo!(),
+            Commands::SelectLayout { session_name, window_index, layout } => todo!(),
+            Commands::SelectWindow { session_name, window_index } => todo!(),
+            Commands::SelectPane { session_name, window_index, pane_index } => todo!(),
+            Commands::AttachSession { session_name } => todo!(),
         }
     }
 
