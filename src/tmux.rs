@@ -314,7 +314,7 @@ impl<'a> Commands<'a> {
                 session_name,
                 window_index,
                 pane_index,
-            } => todo!(),
+            } => Commands::run_select_pane(session_name, *window_index, *pane_index),
             Commands::AttachSession { session_name } => todo!(),
         }
     }
@@ -468,6 +468,25 @@ impl<'a> Commands<'a> {
         } else {
             Err(AppError::Message(format!(
                 "Cannot select window {}",
+                target_name
+            )))
+        }
+    }
+
+    fn run_select_pane(
+        session_name: &str,
+        window_index: usize,
+        pane_index: usize,
+    ) -> Result<(), AppError> {
+        let target_name = format!("{}:{}.{}", session_name, window_index, pane_index);
+        let args = vec!["select-pane", "-t", &target_name];
+        let res = Command::new(TMUX_BIN).args(args).status()?;
+
+        if res.success() {
+            Ok(())
+        } else {
+            Err(AppError::Message(format!(
+                "Cannot select pane {}",
                 target_name
             )))
         }
