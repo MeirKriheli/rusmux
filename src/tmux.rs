@@ -289,7 +289,7 @@ impl<'a> Commands<'a> {
                 window_index,
                 pane_index,
                 comment,
-            } => todo!(),
+            } => Commands::run_send_keys(command, session_name, *window_index, pane_index),
             Commands::NewWindow {
                 session_name,
                 window_name,
@@ -361,6 +361,30 @@ impl<'a> Commands<'a> {
             Ok(())
         } else {
             Err(AppError::Message("Cannot start session".to_string()))
+        }
+    }
+
+    fn run_send_keys(
+        command: &String,
+        session_name: &str,
+        window_index: usize,
+        pane_index: &Option<usize>,
+    ) -> Result<(), AppError> {
+        let target_name = if let Some(pane_idx) = pane_index {
+            format!("{}:{}.{}", session_name, window_index, pane_idx)
+        } else {
+            format!("{}:{}", session_name, window_index)
+        };
+        let args = ["send-keys", "-t", &target_name, command, "C-m"];
+        let res = Command::new(TMUX_BIN).args(args).status()?;
+
+        if res.success() {
+            Ok(())
+        } else {
+            Err(AppError::Message(format!(
+                "Cannot run send-keys for {}",
+                command
+            )))
         }
     }
 }
