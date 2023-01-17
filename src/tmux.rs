@@ -309,7 +309,7 @@ impl<'a> Commands<'a> {
             Commands::SelectWindow {
                 session_name,
                 window_index,
-            } => todo!(),
+            } => Commands::run_select_window(session_name, *window_index),
             Commands::SelectPane {
                 session_name,
                 window_index,
@@ -454,6 +454,21 @@ impl<'a> Commands<'a> {
             Err(AppError::Message(format!(
                 "Cannot select layout {} for window {}",
                 layout, target_name
+            )))
+        }
+    }
+
+    fn run_select_window(session_name: &str, window_index: usize) -> Result<(), AppError> {
+        let target_name = format!("{}:{}", session_name, window_index);
+        let args = vec!["select-window", "-t", &target_name];
+        let res = Command::new(TMUX_BIN).args(args).status()?;
+
+        if res.success() {
+            Ok(())
+        } else {
+            Err(AppError::Message(format!(
+                "Cannot select window {}",
+                target_name
             )))
         }
     }
