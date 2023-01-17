@@ -279,13 +279,42 @@ impl<'a> Commands<'a> {
                 event_name: _,
                 on_event,
             } => Commands::run_project_event(on_event),
-            Commands::Session { project_name, first_window_name } => todo!(),
-            Commands::SendKeys { command, session_name, window_index, pane_index, comment } => todo!(),
-            Commands::NewWindow { session_name, window_name, window_index, project_root } => todo!(),
-            Commands::SplitWindow { session_name, window_index, project_root } => todo!(),
-            Commands::SelectLayout { session_name, window_index, layout } => todo!(),
-            Commands::SelectWindow { session_name, window_index } => todo!(),
-            Commands::SelectPane { session_name, window_index, pane_index } => todo!(),
+            Commands::Session {
+                project_name,
+                first_window_name,
+            } => Commands::run_session_command(project_name, first_window_name),
+            Commands::SendKeys {
+                command,
+                session_name,
+                window_index,
+                pane_index,
+                comment,
+            } => todo!(),
+            Commands::NewWindow {
+                session_name,
+                window_name,
+                window_index,
+                project_root,
+            } => todo!(),
+            Commands::SplitWindow {
+                session_name,
+                window_index,
+                project_root,
+            } => todo!(),
+            Commands::SelectLayout {
+                session_name,
+                window_index,
+                layout,
+            } => todo!(),
+            Commands::SelectWindow {
+                session_name,
+                window_index,
+            } => todo!(),
+            Commands::SelectPane {
+                session_name,
+                window_index,
+                pane_index,
+            } => todo!(),
             Commands::AttachSession { session_name } => todo!(),
         }
     }
@@ -304,9 +333,7 @@ impl<'a> Commands<'a> {
                 let mut parts = Shlex::new(command);
                 let cmd_opt = parts.next();
                 if let Some(cmd) = cmd_opt {
-                    let res = Command::new(cmd)
-                        .args(parts.collect::<Vec<_>>())
-                        .status();
+                    let res = Command::new(cmd).args(parts.collect::<Vec<_>>()).status();
                     if res.is_err() {
                         eprintln!("Error executing command {}", command);
                     }
@@ -314,6 +341,27 @@ impl<'a> Commands<'a> {
             }
         }
         Ok(())
+    }
+
+    fn run_session_command(
+        project_name: &str,
+        first_window_name: &Option<&str>,
+    ) -> Result<(), AppError> {
+        let mut session_args = vec!["new-session", "-d", "-s", project_name];
+        if let Some(name) = first_window_name {
+            session_args.push("-n");
+            session_args.push(name);
+        }
+        let res = Command::new(TMUX_BIN)
+            .env_remove("TMUX")
+            .args(session_args)
+            .status()?;
+
+        if res.success() {
+            Ok(())
+        } else {
+            Err(AppError::Message("Cannot start session".to_string()))
+        }
     }
 }
 
