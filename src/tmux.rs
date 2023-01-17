@@ -288,7 +288,7 @@ impl<'a> Commands<'a> {
                 session_name,
                 window_index,
                 pane_index,
-                comment,
+                comment: _,
             } => Commands::run_send_keys(command, session_name, *window_index, pane_index),
             Commands::NewWindow {
                 session_name,
