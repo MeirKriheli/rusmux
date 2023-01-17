@@ -597,10 +597,10 @@ impl<'a> TmuxProject<'a> {
         }
         w.panes.iter().enumerate().for_each(|(pane_idx, pane)| {
             let pane_with_base_idx = pane_idx + self.tmux.pane_base_index;
-            if idx > 0 {
+            if pane_idx > 0 {
                 commands.push(Commands::SplitWindow {
                     session_name: project_name,
-                    window_index: pane_with_base_idx,
+                    window_index: window_idx,
                     project_root: &self.project.project_root,
                 })
             }
