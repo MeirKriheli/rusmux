@@ -315,7 +315,7 @@ impl<'a> Commands<'a> {
                 window_index,
                 pane_index,
             } => Commands::run_select_pane(session_name, *window_index, *pane_index),
-            Commands::AttachSession { session_name } => todo!(),
+            Commands::AttachSession { session_name } => Commands::run_attach_session(session_name),
         }
     }
 
@@ -488,6 +488,24 @@ impl<'a> Commands<'a> {
             Err(AppError::Message(format!(
                 "Cannot select pane {}",
                 target_name
+            )))
+        }
+    }
+
+    fn run_attach_session(session_name: &str) -> Result<(), AppError> {
+        let param = if env::var("TMUX").is_ok() {
+            "switch-client"
+        } else {
+            "attach-session"
+        };
+        let args = ["-u", param, "-t", session_name];
+        let res = Command::new(TMUX_BIN).args(args).status()?;
+        if res.success() {
+            Ok(())
+        } else {
+            Err(AppError::Message(format!(
+                "Cannot {} to session {}",
+                param, session_name
             )))
         }
     }
