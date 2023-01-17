@@ -295,7 +295,7 @@ impl<'a> Commands<'a> {
                 window_name,
                 window_index,
                 project_root,
-            } => todo!(),
+            } => Commands::run_new_window(session_name, window_name, *window_index, project_root),
             Commands::SplitWindow {
                 session_name,
                 window_index,
@@ -384,6 +384,32 @@ impl<'a> Commands<'a> {
             Err(AppError::Message(format!(
                 "Cannot run send-keys for {}",
                 command
+            )))
+        }
+    }
+
+    fn run_new_window(
+        session_name: &str,
+        window_name: &str,
+        window_index: usize,
+        project_root: &Option<String>,
+    ) -> Result<(), AppError> {
+        let target_name = format!("{}:{}", session_name, window_index);
+        let expanded: String;
+        let mut args = vec!["new-window", "-t", &target_name, "-n", window_name];
+        if let Some(root_dir) = project_root {
+            args.push("-c");
+            expanded = shellexpand::full(root_dir)?.to_string();
+            args.push(&expanded);
+        }
+        let res = Command::new(TMUX_BIN).args(args).status()?;
+
+        if res.success() {
+            Ok(())
+        } else {
+            Err(AppError::Message(format!(
+                "Cannot create window {}",
+                window_name
             )))
         }
     }
