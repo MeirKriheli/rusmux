@@ -427,7 +427,6 @@ impl<'a> Commands<'a> {
             expanded = shellexpand::full(root_dir)?.to_string();
             args.push(&expanded);
         }
-        dbg!(&args);
         let res = Command::new(TMUX_BIN).args(args).status()?;
 
         if res.success() {
