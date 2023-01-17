@@ -305,7 +305,7 @@ impl<'a> Commands<'a> {
                 session_name,
                 window_index,
                 layout,
-            } => todo!(),
+            } => Commands::run_select_layout(session_name, *window_index, layout),
             Commands::SelectWindow {
                 session_name,
                 window_index,
@@ -435,6 +435,25 @@ impl<'a> Commands<'a> {
             Err(AppError::Message(format!(
                 "Cannot split window {}",
                 target_name
+            )))
+        }
+    }
+
+    fn run_select_layout(
+        session_name: &str,
+        window_index: usize,
+        layout: &str,
+    ) -> Result<(), AppError> {
+        let target_name = format!("{}:{}", session_name, window_index);
+        let args = vec!["select-layout", "-t", &target_name];
+        let res = Command::new(TMUX_BIN).args(args).status()?;
+
+        if res.success() {
+            Ok(())
+        } else {
+            Err(AppError::Message(format!(
+                "Cannot select layout {} for window {}",
+                layout, target_name
             )))
         }
     }
