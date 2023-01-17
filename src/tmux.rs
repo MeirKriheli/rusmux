@@ -300,7 +300,7 @@ impl<'a> Commands<'a> {
                 session_name,
                 window_index,
                 project_root,
-            } => todo!(),
+            } => Commands::run_split_window(session_name, *window_index, project_root),
             Commands::SelectLayout {
                 session_name,
                 window_index,
@@ -410,6 +410,32 @@ impl<'a> Commands<'a> {
             Err(AppError::Message(format!(
                 "Cannot create window {}",
                 window_name
+            )))
+        }
+    }
+
+    fn run_split_window(
+        session_name: &str,
+        window_index: usize,
+        project_root: &Option<String>,
+    ) -> Result<(), AppError> {
+        let target_name = format!("{}:{}", session_name, window_index);
+        let mut args = vec!["splitw", "-t", &target_name];
+        let expanded: String;
+        if let Some(root_dir) = project_root {
+            args.push("-c");
+            expanded = shellexpand::full(root_dir)?.to_string();
+            args.push(&expanded);
+        }
+        dbg!(&args);
+        let res = Command::new(TMUX_BIN).args(args).status()?;
+
+        if res.success() {
+            Ok(())
+        } else {
+            Err(AppError::Message(format!(
+                "Cannot split window {}",
+                target_name
             )))
         }
     }
