@@ -7,5 +7,5 @@ yaml files.
 
 ## TODO
 
-[ ] Check if session exists and generate different commands
-[ ] Add example to README
+- [ ] Check if session exists and generate different commands
+- [ ] Add example to README
