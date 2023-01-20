@@ -31,7 +31,7 @@ windows:
 
 ## TODO
 
-- [ ] Check if session exists and generate different commands
+- [X] Check if session exists and generate different commands
 - [X] Add example to README
 - [ ] Implement more events
 - [ ] Implement more `tmuxinator` commands

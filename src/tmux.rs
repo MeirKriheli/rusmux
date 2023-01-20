@@ -641,9 +641,7 @@ impl<'a> TmuxProject<'a> {
             })
         }
 
-        commands.push(Commands::AttachSession {
-            session_name: project_name,
-        });
+        commands.push(self.get_attach_session_command());
 
         commands.push(Commands::ProjectEvent {
             event_name: "exit",
@@ -651,6 +649,12 @@ impl<'a> TmuxProject<'a> {
         });
 
         commands
+    }
+
+    fn get_attach_session_command(&self) -> Commands {
+        Commands::AttachSession {
+            session_name: &self.project.project_name,
+        }
     }
 
     fn get_window_commands(&'a self, idx: usize, w: &'a Window) -> Vec<Commands> {
@@ -718,8 +722,24 @@ impl<'a> TmuxProject<'a> {
         commands
     }
 
+    fn session_exists(&self) -> Result<bool, AppError> {
+        let res = Command::new(TMUX_BIN)
+            .env_remove("TMUX")
+            .arg("has-session")
+            .arg("-t")
+            .arg(&self.project.project_name)
+            .output()?;
+
+        Ok(res.status.success())
+    }
+
     pub fn run(&self) -> Result<(), AppError> {
-        for cmd in self.get_commands() {
+        let cmds = if self.session_exists()? {
+            vec![self.get_attach_session_command()]
+        } else {
+            self.get_commands()
+        };
+        for cmd in cmds {
             cmd.run()?;
         }
         Ok(())
