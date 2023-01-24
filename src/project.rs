@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Project {
+pub struct ProjectConfig {
     pub project_name: String,
     pub project_root: Option<String>,
     #[serde(default)]
@@ -20,7 +20,7 @@ pub struct Project {
     pub windows: Option<Vec<Window>>,
 }
 
-impl TryFrom<String> for Project {
+impl TryFrom<String> for ProjectConfig {
     type Error = AppError;
 
     fn try_from(yaml: String) -> Result<Self, Self::Error> {
@@ -31,7 +31,7 @@ impl TryFrom<String> for Project {
 
 #[cfg(test)]
 mod tests {
-    use super::Project;
+    use super::ProjectConfig;
     use std::convert::TryFrom;
 
     #[test]
@@ -39,7 +39,7 @@ mod tests {
         let name = "empty";
         let yaml = format!("project_name: {}", name);
 
-        let project = Project::try_from(yaml).unwrap();
+        let project = ProjectConfig::try_from(yaml).unwrap();
         assert_eq!(project.project_name, name);
         assert_eq!(project.windows, None);
     }
@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn invalid_project_test() {
         let empty_project: String = "".into();
-        let project = Project::try_from(empty_project);
+        let project = ProjectConfig::try_from(empty_project);
         assert!(project.is_err(), "Should return an error");
     }
 
@@ -64,7 +64,7 @@ windows:
   - {}: {}",
             name, project_root, window_name, window_command
         );
-        let project = Project::try_from(yaml).unwrap();
+        let project = ProjectConfig::try_from(yaml).unwrap();
         assert_eq!(project.project_name, name);
         assert_eq!(project.project_root, Some(project_root));
         assert!(project.windows.is_some(), "windows is none");

@@ -11,7 +11,7 @@ mod window;
 use clap::{command, Arg, Command};
 use error::AppError;
 use glob::glob;
-use project::Project;
+use project::ProjectConfig;
 use std::convert::TryFrom;
 use std::path::Path;
 use tmux::TmuxProject;
@@ -38,7 +38,7 @@ fn run_project(project_name: &str) -> Result<(), AppError> {
     println!("Starting project {}", project_name);
 
     let entries = config::get_project_yaml(project_name)?;
-    let project = Project::try_from(entries)?;
+    let project = ProjectConfig::try_from(entries)?;
     let tmux = TmuxProject::new(&project)?;
     tmux.run()
 }
@@ -46,7 +46,7 @@ fn run_project(project_name: &str) -> Result<(), AppError> {
 // Parses the project file, prints shell commands
 fn debug_project(project_name: &str) -> Result<(), AppError> {
     let entries = config::get_project_yaml(project_name)?;
-    let project = Project::try_from(entries)?;
+    let project = ProjectConfig::try_from(entries)?;
     let tmux = TmuxProject::new(&project)?;
     println!("{}", tmux);
     Ok(())

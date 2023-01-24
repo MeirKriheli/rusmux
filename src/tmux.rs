@@ -1,5 +1,5 @@
 use crate::error::AppError;
-use crate::project::Project;
+use crate::project::ProjectConfig;
 use crate::window::Window;
 use clap::crate_name;
 use shlex::Shlex;
@@ -577,11 +577,11 @@ impl<'a> fmt::Display for Commands<'a> {
 #[derive(Debug)]
 pub struct TmuxProject<'a> {
     tmux: Tmux,
-    project: &'a Project,
+    project: &'a ProjectConfig,
 }
 
 impl<'a> TmuxProject<'a> {
-    pub fn new(project: &'a Project) -> Result<Self, AppError> {
+    pub fn new(project: &'a ProjectConfig) -> Result<Self, AppError> {
         let tmux = Tmux::new_from_config()?;
         Ok(TmuxProject { tmux, project })
     }
