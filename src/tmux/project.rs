@@ -8,7 +8,7 @@ use std::env::set_current_dir;
 use std::fmt;
 use std::process::Command;
 
-pub(crate) const TMUX_BIN: &str = "tmux";
+pub const TMUX_BIN: &str = "tmux";
 const READ_ERROR: &str = "Cannot get tmux config options";
 
 #[derive(Debug)]
