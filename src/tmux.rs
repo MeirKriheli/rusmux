@@ -1,6 +1,6 @@
 use crate::error::AppError;
 use crate::project_config::ProjectConfig;
-use crate::window::Window;
+use crate::project_config::Window;
 use clap::crate_name;
 use shlex::Shlex;
 use std::env;

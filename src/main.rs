@@ -4,9 +4,7 @@ extern crate clap;
 mod config;
 mod error;
 mod project_config;
-mod stringorvec;
 mod tmux;
-mod window;
 
 use clap::{command, Arg, Command};
 use error::AppError;

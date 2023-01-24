@@ -1,6 +1,6 @@
+use super::stringorvec;
+use super::window::Window;
 use crate::error::AppError;
-use crate::stringorvec;
-use crate::window::Window;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
