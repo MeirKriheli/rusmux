@@ -13,8 +13,10 @@ use error::AppError;
 use glob::glob;
 use project::ProjectConfig;
 use std::convert::TryFrom;
+use std::env;
 use std::path::Path;
 use tmux::TmuxProject;
+use which::which;
 
 /// List the project files in the configuration directory
 fn list_projects() -> Result<(), AppError> {
@@ -52,6 +54,30 @@ fn debug_project(project_name: &str) -> Result<(), AppError> {
     Ok(())
 }
 
+fn bool_to_yesno(val: bool) -> &'static str {
+    if val {
+        "Yes"
+    } else {
+        "No"
+    }
+}
+
+// Check the configuration
+fn check_config() -> Result<(), AppError> {
+    let have_tmux = which(tmux::TMUX_BIN).is_ok();
+    let have_editor = env::var("EDITOR").is_ok();
+    let have_shell = env::var("SHELL").is_ok();
+
+    println!(
+        "tmux is installed? {}\n$EDITOR is set? {}\n$SHELL is set? {}",
+        bool_to_yesno(have_tmux),
+        bool_to_yesno(have_editor),
+        bool_to_yesno(have_shell)
+    );
+
+    Ok(())
+}
+
 fn main() -> Result<(), AppError> {
     let matches = command!()
         .arg_required_else_help(true)
@@ -68,6 +94,7 @@ fn main() -> Result<(), AppError> {
                 .about("Run the project commands")
                 .arg(Arg::new("project").help("Project name").required(true)),
         )
+        .subcommand(Command::new("doctor").about("Check your configuration"))
         .get_matches();
 
     if let Some(project_name) = matches.get_one::<String>("project") {
@@ -76,6 +103,7 @@ fn main() -> Result<(), AppError> {
 
     match matches.subcommand() {
         Some(("list", _)) => list_projects(),
+        Some(("doctor", _)) => check_config(),
         Some(("debug", debug_matches)) => {
             debug_project(debug_matches.get_one::<String>("project").unwrap())
         }
