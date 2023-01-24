@@ -1,5 +1,5 @@
-mod project;
 mod commands;
+mod project;
 
 pub use project::TmuxProject;
 pub use project::TMUX_BIN;

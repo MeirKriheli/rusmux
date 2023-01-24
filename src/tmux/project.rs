@@ -1,7 +1,7 @@
+use super::commands::Commands;
 use crate::error::AppError;
 use crate::project_config::ProjectConfig;
 use crate::project_config::Window;
-use super::commands::Commands;
 use std::fmt;
 use std::process::Command;
 
@@ -55,7 +55,6 @@ impl Tmux {
         Ok(Self::new(values[0], values[1]))
     }
 }
-
 
 #[derive(Debug)]
 pub struct TmuxProject<'a> {
