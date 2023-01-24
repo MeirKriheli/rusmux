@@ -1,5 +1,5 @@
 use crate::error::AppError;
-use crate::project::ProjectConfig;
+use crate::project_config::ProjectConfig;
 use crate::window::Window;
 use clap::crate_name;
 use shlex::Shlex;

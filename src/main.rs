@@ -3,7 +3,7 @@ extern crate clap;
 
 mod config;
 mod error;
-mod project;
+mod project_config;
 mod stringorvec;
 mod tmux;
 mod window;
@@ -11,7 +11,7 @@ mod window;
 use clap::{command, Arg, Command};
 use error::AppError;
 use glob::glob;
-use project::ProjectConfig;
+use project_config::ProjectConfig;
 use std::convert::TryFrom;
 use std::env;
 use std::path::Path;
