@@ -6,28 +6,11 @@ mod error;
 mod project_config;
 mod tmux;
 
-use app::actions;
-use clap::{command, Arg, Command};
+use app::{actions, cli};
 use error::AppError;
 
 fn main() -> Result<(), AppError> {
-    let matches = command!()
-        .arg_required_else_help(true)
-        .subcommand_negates_reqs(true)
-        .arg(Arg::new("project").help("Project name").required(true))
-        .subcommand(Command::new("list").about("List all projects"))
-        .subcommand(
-            Command::new("debug")
-                .about("Output shell commands for a project")
-                .arg(Arg::new("project").help("Project name").required(true)),
-        )
-        .subcommand(
-            Command::new("run")
-                .about("Run the project commands")
-                .arg(Arg::new("project").help("Project name").required(true)),
-        )
-        .subcommand(Command::new("doctor").about("Check your configuration"))
-        .get_matches();
+    let matches = cli::get_cli_command_parser().get_matches();
 
     if let Some(project_name) = matches.get_one::<String>("project") {
         return actions::run_project(project_name);
