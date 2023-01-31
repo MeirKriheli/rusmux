@@ -233,9 +233,9 @@ impl<'a> fmt::Display for TmuxProject<'a> {
         let joined = self
             .get_commands()
             .iter()
-            .map(|x| format!("{}", x))
+            .map(|x| format!("{x}"))
             .collect::<Vec<String>>()
             .join("\n");
-        write!(f, "{}", joined)
+        write!(f, "{joined}")
     }
 }

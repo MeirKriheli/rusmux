@@ -26,7 +26,7 @@ fn list_projects() -> Result<(), AppError> {
                 "{}",
                 Path::new(&path).file_stem().unwrap().to_str().unwrap()
             ),
-            Err(e) => println!("{:?}", e),
+            Err(e) => println!("{e:?}"),
         }
     }
 
@@ -35,7 +35,7 @@ fn list_projects() -> Result<(), AppError> {
 
 // Parses the project file, creates the tmux session
 fn run_project(project_name: &str) -> Result<(), AppError> {
-    println!("Starting project {}", project_name);
+    println!("Starting project {project_name}");
 
     let entries = config::get_project_yaml(project_name)?;
     let project = ProjectConfig::try_from(entries)?;
@@ -48,7 +48,7 @@ fn debug_project(project_name: &str) -> Result<(), AppError> {
     let entries = config::get_project_yaml(project_name)?;
     let project = ProjectConfig::try_from(entries)?;
     let tmux = TmuxProject::new(&project)?;
-    println!("{}", tmux);
+    println!("{tmux}");
     Ok(())
 }
 

@@ -68,9 +68,9 @@ impl<'a> Commands<'a> {
         project_name: &'a str,
         project_root: &'a Option<String>,
     ) -> fmt::Result {
-        let shebang = env::var("SHELL").map(|x| format!("#!{}", x)).ok();
+        let shebang = env::var("SHELL").map(|x| format!("#!{x}")).ok();
         let cd_command = match project_root {
-            Some(project_root) => format!("\ncd {}", project_root),
+            Some(project_root) => format!("\ncd {project_root}"),
             None => "".into(),
         };
 
@@ -97,8 +97,7 @@ impl<'a> Commands<'a> {
         let commands = on_event.as_ref().map_or(String::from(""), |v| v.join("\n"));
         write!(
             f,
-            "\n# Run on_project_{} command(s)\n{}",
-            event_name, commands
+            "\n# Run on_project_{event_name} command(s)\n{commands}"
         )
     }
 
@@ -107,12 +106,11 @@ impl<'a> Commands<'a> {
         project_name: &'a str,
         first_window_name: Option<&'a str>,
     ) -> fmt::Result {
-        let window_param = first_window_name.map_or("".into(), |n| format!(" -n {}", n));
+        let window_param = first_window_name.map_or("".into(), |n| format!(" -n {n}"));
         write!(
             f,
             "\n# Create new session and first window\n\
-            TMUX= {} new-session -d -s {}{}",
-            TMUX_BIN, project_name, window_param
+            TMUX= {TMUX_BIN} new-session -d -s {project_name}{window_param}"
         )
     }
 
@@ -124,19 +122,18 @@ impl<'a> Commands<'a> {
         pane_index: Option<usize>,
         comment: Option<&str>,
     ) -> fmt::Result {
-        let formatted_pane_index = pane_index.map_or("".into(), |idx| format!(".{}", idx));
-        let comment = comment.map_or("".into(), |c| format!("\n# {}\n", c));
+        let formatted_pane_index = pane_index.map_or("".into(), |idx| format!(".{idx}"));
+        let comment = comment.map_or("".into(), |c| format!("\n# {c}\n"));
         let escaped = shell_escape::escape(command.into());
         write!(
             f,
-            "{}{} send-keys -t {}:{}{} {} C-m",
-            comment, TMUX_BIN, session_name, window_index, formatted_pane_index, escaped
+            "{comment}{TMUX_BIN} send-keys -t {session_name}:{window_index}{formatted_pane_index} {escaped} C-m"
         )
     }
 
     fn get_cd_root_flag(project_root: &Option<String>) -> String {
         match project_root {
-            Some(dir) => format!(" -c {}", dir),
+            Some(dir) => format!(" -c {dir}"),
             None => "".into(),
         }
     }
@@ -151,8 +148,7 @@ impl<'a> Commands<'a> {
         let cd_root = Commands::get_cd_root_flag(project_root);
         write!(
             f,
-            "\n# Create \"{}\" window \n{} new-window{} -t {}:{} -n {}",
-            window_name, TMUX_BIN, cd_root, session_name, window_index, window_name
+            "\n# Create \"{window_name}\" window \n{TMUX_BIN} new-window{cd_root} -t {session_name}:{window_index} -n {window_name}"
         )
     }
 
@@ -165,8 +161,7 @@ impl<'a> Commands<'a> {
         let cd_root = Commands::get_cd_root_flag(project_root);
         write!(
             f,
-            "{} splitw{} -t {}:{}",
-            TMUX_BIN, cd_root, session_name, window_index
+            "{TMUX_BIN} splitw{cd_root} -t {session_name}:{window_index}"
         )
     }
 
@@ -178,8 +173,7 @@ impl<'a> Commands<'a> {
     ) -> Result<(), fmt::Error> {
         write!(
             f,
-            "{} select-layout -t {}:{} {}",
-            TMUX_BIN, session_name, window_index, layout
+            "{TMUX_BIN} select-layout -t {session_name}:{window_index} {layout}"
         )
     }
 
@@ -190,8 +184,7 @@ impl<'a> Commands<'a> {
     ) -> Result<(), fmt::Error> {
         write!(
             f,
-            "{} select-window -t {}:{}",
-            TMUX_BIN, session_name, window_index
+            "{TMUX_BIN} select-window -t {session_name}:{window_index}"
         )
     }
 
@@ -203,17 +196,15 @@ impl<'a> Commands<'a> {
     ) -> Result<(), fmt::Error> {
         write!(
             f,
-            "{} select-pane -t {}:{}.{}",
-            TMUX_BIN, session_name, window_index, pane_index
+            "{TMUX_BIN} select-pane -t {session_name}:{window_index}.{pane_index}"
         )
     }
 
     fn fmt_attach_session(f: &mut fmt::Formatter, session_name: &str) -> Result<(), fmt::Error> {
         write!(
             f,
-            "\nif [ -z \"$TMUX\" ]; then\n  {} -u attach-session -t {}\n\
-            else\n  {} -u switch-client -t {}\nfi",
-            TMUX_BIN, session_name, TMUX_BIN, session_name
+            "\nif [ -z \"$TMUX\" ]; then\n  {TMUX_BIN} -u attach-session -t {session_name}\n\
+            else\n  {TMUX_BIN} -u switch-client -t {session_name}\nfi"
         )
     }
 
@@ -283,7 +274,7 @@ impl<'a> Commands<'a> {
                 if let Some(cmd) = cmd_opt {
                     let res = Command::new(cmd).args(parts.collect::<Vec<_>>()).status();
                     if res.is_err() {
-                        eprintln!("Error executing command {}", command);
+                        eprintln!("Error executing command {command}");
                     }
                 }
             }
@@ -319,9 +310,9 @@ impl<'a> Commands<'a> {
         pane_index: &Option<usize>,
     ) -> Result<(), AppError> {
         let target_name = if let Some(pane_idx) = pane_index {
-            format!("{}:{}.{}", session_name, window_index, pane_idx)
+            format!("{session_name}:{window_index}.{pane_idx}")
         } else {
-            format!("{}:{}", session_name, window_index)
+            format!("{session_name}:{window_index}")
         };
         let args = ["send-keys", "-t", &target_name, command, "C-m"];
         let res = Command::new(TMUX_BIN).args(args).status()?;
@@ -330,8 +321,7 @@ impl<'a> Commands<'a> {
             Ok(())
         } else {
             Err(AppError::Message(format!(
-                "Cannot run send-keys for {}",
-                command
+                "Cannot run send-keys for {command}"
             )))
         }
     }
@@ -342,7 +332,7 @@ impl<'a> Commands<'a> {
         window_index: usize,
         project_root: &Option<String>,
     ) -> Result<(), AppError> {
-        let target_name = format!("{}:{}", session_name, window_index);
+        let target_name = format!("{session_name}:{window_index}");
         let expanded: String;
         let mut args = vec!["new-window", "-t", &target_name, "-n", window_name];
         if let Some(root_dir) = project_root {
@@ -356,8 +346,7 @@ impl<'a> Commands<'a> {
             Ok(())
         } else {
             Err(AppError::Message(format!(
-                "Cannot create window {}",
-                window_name
+                "Cannot create window {window_name}"
             )))
         }
     }
@@ -367,7 +356,7 @@ impl<'a> Commands<'a> {
         window_index: usize,
         project_root: &Option<String>,
     ) -> Result<(), AppError> {
-        let target_name = format!("{}:{}", session_name, window_index);
+        let target_name = format!("{session_name}:{window_index}");
         let mut args = vec!["splitw", "-t", &target_name];
         let expanded: String;
         if let Some(root_dir) = project_root {
@@ -381,8 +370,7 @@ impl<'a> Commands<'a> {
             Ok(())
         } else {
             Err(AppError::Message(format!(
-                "Cannot split window {}",
-                target_name
+                "Cannot split window {target_name}"
             )))
         }
     }
@@ -392,7 +380,7 @@ impl<'a> Commands<'a> {
         window_index: usize,
         layout: &str,
     ) -> Result<(), AppError> {
-        let target_name = format!("{}:{}", session_name, window_index);
+        let target_name = format!("{session_name}:{window_index}");
         let args = vec!["select-layout", "-t", &target_name];
         let res = Command::new(TMUX_BIN).args(args).status()?;
 
@@ -400,14 +388,13 @@ impl<'a> Commands<'a> {
             Ok(())
         } else {
             Err(AppError::Message(format!(
-                "Cannot select layout {} for window {}",
-                layout, target_name
+                "Cannot select layout {layout} for window {target_name}"
             )))
         }
     }
 
     fn run_select_window(session_name: &str, window_index: usize) -> Result<(), AppError> {
-        let target_name = format!("{}:{}", session_name, window_index);
+        let target_name = format!("{session_name}:{window_index}");
         let args = vec!["select-window", "-t", &target_name];
         let res = Command::new(TMUX_BIN).args(args).status()?;
 
@@ -415,8 +402,7 @@ impl<'a> Commands<'a> {
             Ok(())
         } else {
             Err(AppError::Message(format!(
-                "Cannot select window {}",
-                target_name
+                "Cannot select window {target_name}"
             )))
         }
     }
@@ -426,7 +412,7 @@ impl<'a> Commands<'a> {
         window_index: usize,
         pane_index: usize,
     ) -> Result<(), AppError> {
-        let target_name = format!("{}:{}.{}", session_name, window_index, pane_index);
+        let target_name = format!("{session_name}:{window_index}.{pane_index}");
         let args = vec!["select-pane", "-t", &target_name];
         let res = Command::new(TMUX_BIN).args(args).status()?;
 
@@ -434,8 +420,7 @@ impl<'a> Commands<'a> {
             Ok(())
         } else {
             Err(AppError::Message(format!(
-                "Cannot select pane {}",
-                target_name
+                "Cannot select pane {target_name}"
             )))
         }
     }
@@ -452,8 +437,7 @@ impl<'a> Commands<'a> {
             Ok(())
         } else {
             Err(AppError::Message(format!(
-                "Cannot {} to session {}",
-                param, session_name
+                "Cannot {param} to session {session_name}"
             )))
         }
     }

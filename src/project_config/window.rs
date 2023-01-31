@@ -18,7 +18,7 @@ impl TryFrom<String> for Window {
 
     fn try_from(yaml: String) -> Result<Self, Self::Error> {
         serde_yaml::from_str(&yaml)
-            .map_err(|e| AppError::Message(format!("Cannot parse yaml: {}", e)))
+            .map_err(|e| AppError::Message(format!("Cannot parse yaml: {e}")))
     }
 }
 

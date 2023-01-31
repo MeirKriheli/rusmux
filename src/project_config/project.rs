@@ -25,7 +25,7 @@ impl TryFrom<String> for ProjectConfig {
 
     fn try_from(yaml: String) -> Result<Self, Self::Error> {
         serde_yaml::from_str(&yaml)
-            .map_err(|e| AppError::Message(format!("Cannot parse yaml: {}", e)))
+            .map_err(|e| AppError::Message(format!("Cannot parse yaml: {e}")))
     }
 }
 
@@ -37,7 +37,7 @@ mod tests {
     #[test]
     fn empty_project_test() {
         let name = "empty";
-        let yaml = format!("project_name: {}", name);
+        let yaml = format!("project_name: {name}");
 
         let project = ProjectConfig::try_from(yaml).unwrap();
         assert_eq!(project.project_name, name);
@@ -58,11 +58,10 @@ mod tests {
         let window_name: String = "editor".into();
         let window_command: String = "vim".into();
         let yaml = format!(
-            "project_name: {}
-project_root: {}
+            "project_name: {name}
+project_root: {project_root}
 windows:
-  - {}: {}",
-            name, project_root, window_name, window_command
+  - {window_name}: {window_command}"
         );
         let project = ProjectConfig::try_from(yaml).unwrap();
         assert_eq!(project.project_name, name);
