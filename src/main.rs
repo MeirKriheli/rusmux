@@ -1,12 +1,13 @@
 #[macro_use]
 extern crate clap;
 
-mod config;
+mod app;
 mod error;
 mod project_config;
 mod tmux;
 
 use clap::{command, Arg, Command};
+use app::config;
 use error::AppError;
 use glob::glob;
 use project_config::ProjectConfig;

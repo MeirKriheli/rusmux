@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-use super::error::AppError;
+use crate::error::AppError;
 
 // Returns the path of a file/pattern inside the config dir
 pub fn get_path(pattern: &str) -> Result<String, AppError> {
