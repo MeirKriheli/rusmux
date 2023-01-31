@@ -95,10 +95,7 @@ impl<'a> Commands<'a> {
         on_event: &'a Option<Vec<String>>,
     ) -> fmt::Result {
         let commands = on_event.as_ref().map_or(String::from(""), |v| v.join("\n"));
-        write!(
-            f,
-            "\n# Run on_project_{event_name} command(s)\n{commands}"
-        )
+        write!(f, "\n# Run on_project_{event_name} command(s)\n{commands}")
     }
 
     fn fmt_session_command(
