@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use super::error::ProjectParseError;
 use serde::de::{self, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_yaml::{self, Value};
@@ -14,11 +14,10 @@ pub struct Window {
 }
 
 impl TryFrom<String> for Window {
-    type Error = AppError;
+    type Error = ProjectParseError;
 
     fn try_from(yaml: String) -> Result<Self, Self::Error> {
-        serde_yaml::from_str(&yaml)
-            .map_err(|e| AppError::Message(format!("Cannot parse yaml: {e}")))
+        serde_yaml::from_str(&yaml).map_err(|e| ProjectParseError(format!("{e}")))
     }
 }
 

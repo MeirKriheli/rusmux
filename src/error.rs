@@ -1,3 +1,4 @@
+use crate::project_config::ProjectParseError;
 use std::env;
 use std::io;
 use thiserror::Error;
@@ -12,4 +13,6 @@ pub enum AppError {
     Expand(#[from] shellexpand::LookupError<env::VarError>),
     #[error("{0}")]
     Message(String),
+    #[error("Cannot parse yaml {0}")]
+    ParseError(#[from] ProjectParseError),
 }

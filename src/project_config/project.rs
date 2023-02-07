@@ -1,6 +1,6 @@
+use super::error::ProjectParseError;
 use super::stringorvec;
 use super::window::Window;
-use crate::error::AppError;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
@@ -21,11 +21,10 @@ pub struct ProjectConfig {
 }
 
 impl TryFrom<String> for ProjectConfig {
-    type Error = AppError;
+    type Error = ProjectParseError;
 
     fn try_from(yaml: String) -> Result<Self, Self::Error> {
-        serde_yaml::from_str(&yaml)
-            .map_err(|e| AppError::Message(format!("Cannot parse yaml: {e}")))
+        serde_yaml::from_str(&yaml).map_err(|e| ProjectParseError(format!("{e}")))
     }
 }
 
