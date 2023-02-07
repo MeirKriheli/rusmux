@@ -1,5 +1,5 @@
 use super::commands::Commands;
-use crate::error::AppError;
+use super::TmuxError;
 use crate::project_config::ProjectConfig;
 use crate::project_config::Window;
 use std::fmt;
@@ -25,7 +25,7 @@ impl Tmux {
 
     /// Create a new `Tmux` instance getting the values of `base-index` and `pane-base-index` from
     /// the installed tmux config.
-    fn new_from_config() -> Result<Self, AppError> {
+    fn new_from_config() -> Result<Self, TmuxError> {
         let output = Command::new(TMUX_BIN)
             .args([
                 "start",
@@ -39,17 +39,17 @@ impl Tmux {
                 "pane-base-index",
             ])
             .output()
-            .map_err(|_| AppError::Message(READ_ERROR.into()))?
+            .map_err(|_| TmuxError::Message(READ_ERROR.into()))?
             .stdout;
 
         let values: Vec<usize> = String::from_utf8(output)
-            .map_err(|_| AppError::Message(READ_ERROR.into()))?
+            .map_err(|_| TmuxError::Message(READ_ERROR.into()))?
             .lines()
             .map(|line| line.split(' ').nth(1).unwrap().parse::<usize>().unwrap())
             .collect();
 
         if values.len() != 2 {
-            return Err(AppError::Message(READ_ERROR.into()));
+            return Err(TmuxError::Message(READ_ERROR.into()));
         }
 
         Ok(Self::new(values[0], values[1]))
@@ -63,7 +63,7 @@ pub struct TmuxProject<'a> {
 }
 
 impl<'a> TmuxProject<'a> {
-    pub fn new(project: &'a ProjectConfig) -> Result<Self, AppError> {
+    pub fn new(project: &'a ProjectConfig) -> Result<Self, TmuxError> {
         let tmux = Tmux::new_from_config()?;
         Ok(TmuxProject { tmux, project })
     }
@@ -204,7 +204,7 @@ impl<'a> TmuxProject<'a> {
         commands
     }
 
-    fn session_exists(&self) -> Result<bool, AppError> {
+    fn session_exists(&self) -> Result<bool, TmuxError> {
         let res = Command::new(TMUX_BIN)
             .env_remove("TMUX")
             .arg("has-session")
@@ -215,7 +215,7 @@ impl<'a> TmuxProject<'a> {
         Ok(res.status.success())
     }
 
-    pub fn run(&self) -> Result<(), AppError> {
+    pub fn run(&self) -> Result<(), TmuxError> {
         let cmds = if self.session_exists()? {
             vec![self.get_attach_session_command()]
         } else {

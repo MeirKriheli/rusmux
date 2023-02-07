@@ -1,4 +1,5 @@
 use crate::project_config::ProjectParseError;
+use crate::tmux::TmuxError;
 use std::env;
 use std::io;
 use thiserror::Error;
@@ -12,7 +13,7 @@ pub enum AppError {
     #[error("Can not expand path")]
     Expand(#[from] shellexpand::LookupError<env::VarError>),
     #[error("{0}")]
-    Message(String),
-    #[error("Cannot parse yaml {0}")]
     ParseError(#[from] ProjectParseError),
+    #[error(transparent)]
+    TmuxError(#[from] TmuxError),
 }

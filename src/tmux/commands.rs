@@ -1,5 +1,5 @@
 use super::project::TMUX_BIN;
-use crate::error::AppError;
+use super::TmuxError;
 
 use clap::crate_name;
 use shlex::Shlex;
@@ -205,7 +205,7 @@ impl<'a> Commands<'a> {
         )
     }
 
-    pub fn run(&self) -> Result<(), AppError> {
+    pub fn run(&self) -> Result<(), TmuxError> {
         match self {
             Commands::Server {
                 project_name: _,
@@ -255,7 +255,7 @@ impl<'a> Commands<'a> {
         }
     }
 
-    fn run_server_command(project_root: &'a Option<String>) -> Result<(), AppError> {
+    fn run_server_command(project_root: &'a Option<String>) -> Result<(), TmuxError> {
         Command::new(TMUX_BIN).arg("start-server").status()?;
         if let Some(root_dir) = project_root {
             set_current_dir(shellexpand::full(root_dir)?.as_ref())?;
@@ -263,7 +263,7 @@ impl<'a> Commands<'a> {
         Ok(())
     }
 
-    fn run_project_event(on_event: &Option<Vec<String>>) -> Result<(), AppError> {
+    fn run_project_event(on_event: &Option<Vec<String>>) -> Result<(), TmuxError> {
         if let Some(commands) = on_event {
             for command in commands {
                 let mut parts = Shlex::new(command);
@@ -282,7 +282,7 @@ impl<'a> Commands<'a> {
     fn run_session_command(
         project_name: &str,
         first_window_name: &Option<&str>,
-    ) -> Result<(), AppError> {
+    ) -> Result<(), TmuxError> {
         let mut session_args = vec!["new-session", "-d", "-s", project_name];
         if let Some(name) = first_window_name {
             session_args.push("-n");
@@ -296,7 +296,7 @@ impl<'a> Commands<'a> {
         if res.success() {
             Ok(())
         } else {
-            Err(AppError::Message("Cannot start session".to_string()))
+            Err(TmuxError::Message("Cannot start session".to_string()))
         }
     }
 
@@ -305,7 +305,7 @@ impl<'a> Commands<'a> {
         session_name: &str,
         window_index: usize,
         pane_index: &Option<usize>,
-    ) -> Result<(), AppError> {
+    ) -> Result<(), TmuxError> {
         let target_name = if let Some(pane_idx) = pane_index {
             format!("{session_name}:{window_index}.{pane_idx}")
         } else {
@@ -317,7 +317,7 @@ impl<'a> Commands<'a> {
         if res.success() {
             Ok(())
         } else {
-            Err(AppError::Message(format!(
+            Err(TmuxError::Message(format!(
                 "Cannot run send-keys for {command}"
             )))
         }
@@ -328,7 +328,7 @@ impl<'a> Commands<'a> {
         window_name: &str,
         window_index: usize,
         project_root: &Option<String>,
-    ) -> Result<(), AppError> {
+    ) -> Result<(), TmuxError> {
         let target_name = format!("{session_name}:{window_index}");
         let expanded: String;
         let mut args = vec!["new-window", "-t", &target_name, "-n", window_name];
@@ -342,7 +342,7 @@ impl<'a> Commands<'a> {
         if res.success() {
             Ok(())
         } else {
-            Err(AppError::Message(format!(
+            Err(TmuxError::Message(format!(
                 "Cannot create window {window_name}"
             )))
         }
@@ -352,7 +352,7 @@ impl<'a> Commands<'a> {
         session_name: &str,
         window_index: usize,
         project_root: &Option<String>,
-    ) -> Result<(), AppError> {
+    ) -> Result<(), TmuxError> {
         let target_name = format!("{session_name}:{window_index}");
         let mut args = vec!["splitw", "-t", &target_name];
         let expanded: String;
@@ -366,7 +366,7 @@ impl<'a> Commands<'a> {
         if res.success() {
             Ok(())
         } else {
-            Err(AppError::Message(format!(
+            Err(TmuxError::Message(format!(
                 "Cannot split window {target_name}"
             )))
         }
@@ -376,7 +376,7 @@ impl<'a> Commands<'a> {
         session_name: &str,
         window_index: usize,
         layout: &str,
-    ) -> Result<(), AppError> {
+    ) -> Result<(), TmuxError> {
         let target_name = format!("{session_name}:{window_index}");
         let args = vec!["select-layout", "-t", &target_name];
         let res = Command::new(TMUX_BIN).args(args).status()?;
@@ -384,13 +384,13 @@ impl<'a> Commands<'a> {
         if res.success() {
             Ok(())
         } else {
-            Err(AppError::Message(format!(
+            Err(TmuxError::Message(format!(
                 "Cannot select layout {layout} for window {target_name}"
             )))
         }
     }
 
-    fn run_select_window(session_name: &str, window_index: usize) -> Result<(), AppError> {
+    fn run_select_window(session_name: &str, window_index: usize) -> Result<(), TmuxError> {
         let target_name = format!("{session_name}:{window_index}");
         let args = vec!["select-window", "-t", &target_name];
         let res = Command::new(TMUX_BIN).args(args).status()?;
@@ -398,7 +398,7 @@ impl<'a> Commands<'a> {
         if res.success() {
             Ok(())
         } else {
-            Err(AppError::Message(format!(
+            Err(TmuxError::Message(format!(
                 "Cannot select window {target_name}"
             )))
         }
@@ -408,7 +408,7 @@ impl<'a> Commands<'a> {
         session_name: &str,
         window_index: usize,
         pane_index: usize,
-    ) -> Result<(), AppError> {
+    ) -> Result<(), TmuxError> {
         let target_name = format!("{session_name}:{window_index}.{pane_index}");
         let args = vec!["select-pane", "-t", &target_name];
         let res = Command::new(TMUX_BIN).args(args).status()?;
@@ -416,13 +416,13 @@ impl<'a> Commands<'a> {
         if res.success() {
             Ok(())
         } else {
-            Err(AppError::Message(format!(
+            Err(TmuxError::Message(format!(
                 "Cannot select pane {target_name}"
             )))
         }
     }
 
-    fn run_attach_session(session_name: &str) -> Result<(), AppError> {
+    fn run_attach_session(session_name: &str) -> Result<(), TmuxError> {
         let param = if env::var("TMUX").is_ok() {
             "switch-client"
         } else {
@@ -433,7 +433,7 @@ impl<'a> Commands<'a> {
         if res.success() {
             Ok(())
         } else {
-            Err(AppError::Message(format!(
+            Err(TmuxError::Message(format!(
                 "Cannot {param} to session {session_name}"
             )))
         }

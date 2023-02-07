@@ -42,7 +42,7 @@ pub fn run_project(project_name: &str) -> Result<(), AppError> {
     let entries = config::get_project_yaml(project_name)?;
     let project = ProjectConfig::try_from(entries)?;
     let tmux = TmuxProject::new(&project)?;
-    tmux.run()
+    Ok(tmux.run()?)
 }
 
 fn bool_to_yesno(val: bool) -> &'static str {
