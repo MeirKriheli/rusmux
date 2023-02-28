@@ -5,7 +5,7 @@ use crate::{
     tmux::{self, TmuxProject},
 };
 use glob::glob;
-use std::env;
+use std::{env, process::Command};
 use std::path::Path;
 use which::which;
 
@@ -66,5 +66,23 @@ pub(crate) fn check_config() -> Result<(), AppError> {
         bool_to_yesno(have_shell)
     );
 
+    Ok(())
+}
+
+pub(crate) fn edit_project(project_name: &str) -> Result<(), AppError> {
+    let filename = format!("{}.yml", project_name);
+    let project_file_path = config::get_path(&filename)?;
+    if !Path::new(&project_file_path).exists() {
+        return Err(std::io::Error::from(std::io::ErrorKind::NotFound).into());
+    }
+
+    let editor = env::var("EDITOR");
+    if editor.is_err() {
+        return Err(AppError::Message(format!(
+            "$EDITOR is not set, the file path to edit is {project_file_path}"
+        )));
+    }
+
+    Command::new(editor.unwrap()).arg(project_file_path).status()?;
     Ok(())
 }

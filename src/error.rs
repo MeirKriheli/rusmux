@@ -16,4 +16,6 @@ pub enum AppError {
     ParseError(#[from] ProjectParseError),
     #[error(transparent)]
     TmuxError(#[from] TmuxError),
+    #[error("{0}")]
+    Message(String),
 }

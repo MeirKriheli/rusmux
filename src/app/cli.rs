@@ -17,5 +17,10 @@ pub(crate) fn get_cli_command_parser() -> Command {
                 .about("Run the project commands")
                 .arg(Arg::new("project").help("Project name").required(true)),
         )
+        .subcommand(
+            Command::new("edit")
+                .about("Edit an existing project")
+                .arg(Arg::new("project").help("Project name").required(true)),
+        )
         .subcommand(Command::new("doctor").about("Check your configuration"))
 }

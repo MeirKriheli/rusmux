@@ -25,6 +25,9 @@ fn main() -> Result<(), AppError> {
         Some(("run", run_matches)) => {
             actions::run_project(run_matches.get_one::<String>("project").unwrap())
         }
+        Some(("edit", edit_matches)) => {
+            actions::edit_project(edit_matches.get_one::<String>("project").unwrap())
+        }
         _ => unreachable!(),
     }
 }
