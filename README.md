@@ -28,10 +28,3 @@ windows:
         - grunt serve
   - mail: python -m smtpd -n -c DebuggingServer localhost:1025
 ```
-
-## TODO
-
-- [X] Check if session exists and generate different commands
-- [X] Add example to README
-- [ ] Implement more events
-- [ ] Implement more `tmuxinator` commands
