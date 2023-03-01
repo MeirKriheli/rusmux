@@ -1,4 +1,4 @@
-use clap::{command, Arg, Command};
+use clap::{command, Arg, ArgAction, Command};
 
 /// Returns the `clap::Commnad` for the application
 pub(crate) fn get_cli_command_parser() -> Command {
@@ -21,6 +21,17 @@ pub(crate) fn get_cli_command_parser() -> Command {
             Command::new("edit")
                 .about("Edit an existing project")
                 .arg(Arg::new("project").help("Project name").required(true)),
+        )
+        .subcommand(
+            Command::new("new")
+                .about("Create a new project")
+                .arg(Arg::new("project").help("Project name").required(true))
+                .arg(
+                    Arg::new("blank")
+                        .long("blank")
+                        .action(ArgAction::SetTrue)
+                        .help("Don't use a template for the file"),
+                ),
         )
         .subcommand(Command::new("doctor").about("Check your configuration"))
 }

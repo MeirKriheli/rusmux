@@ -5,9 +5,29 @@ use crate::{
     tmux::{self, TmuxProject},
 };
 use glob::glob;
+use std::io::prelude::*;
 use std::{env, process::Command};
-use std::path::Path;
+use std::{fs::File, path::Path};
 use which::which;
+
+macro_rules! default_template {
+    () => {
+        "project_name: {}
+# project_root: ~/src/project_path
+# on_project_start:
+#   - sudo systemctl start postgresql
+# pre_window:
+#   - workon dummy
+# windows:
+#   - editor: vim
+#   - shells:
+#       layout: main-vertical
+#       panes:
+#         - #
+#         - grunt serve
+"
+    };
+}
 
 /// List the project files in the configuration directory
 pub(crate) fn list_projects() -> Result<(), AppError> {
@@ -83,6 +103,37 @@ pub(crate) fn edit_project(project_name: &str) -> Result<(), AppError> {
         )));
     }
 
-    Command::new(editor.unwrap()).arg(project_file_path).status()?;
+    Command::new(editor.unwrap())
+        .arg(project_file_path)
+        .status()?;
+    Ok(())
+}
+
+pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppError> {
+    let filename = format!("{}.yml", project_name);
+    let project_file = config::get_path(&filename)?;
+    let project_file_path = Path::new(&project_file);
+    if project_file_path.exists() {
+        return Err(std::io::Error::from(std::io::ErrorKind::AlreadyExists).into());
+    }
+    let content = if blank {
+        format!("project_name: {project_name}")
+    } else {
+        format!(default_template!(), project_name)
+    };
+
+    let mut new_file = File::create(project_file_path)?;
+    new_file.write_all(content.as_bytes())?;
+
+    let editor = env::var("EDITOR");
+    if editor.is_err() {
+        return Err(AppError::Message(format!(
+            "$EDITOR is not set, created the file {project_file}"
+        )));
+    }
+
+    Command::new(editor.unwrap())
+        .arg(project_file_path)
+        .status()?;
     Ok(())
 }
