@@ -5,6 +5,7 @@ description = "Automate tmux sessions configuration"
 authors = ["Meir Kriheli <mkriheli@gmail.com>"]
 edition = "2021"
 repository = "https://github.com/MeirKriheli/rusmux"
+license = "MIT"
 
 [dependencies]
 clap = { version = "~4.0", features = ["cargo"] }
