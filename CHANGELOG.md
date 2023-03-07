@@ -2,11 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [0.3.4] - 2023-03-07
 
 ### Documentation
 
 - Added existing commands to README
+
+### Features
+
+- Implemented `delete` command, resolves #2
+
+### Miscellaneous Tasks
+
+- Update CHANGELOG.md for 0.3.4
 
 ## [0.3.3] - 2023-03-01
 
