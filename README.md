@@ -28,3 +28,40 @@ windows:
         - grunt serve
   - mail: python -m smtpd -n -c DebuggingServer localhost:1025
 ```
+
+## Commands
+
+* Run a project
+
+        rusmux [project]
+
+  or 
+
+        rusmux run [project]
+
+* List all existing projects
+
+        rusmux list
+  
+* Output shell commands for a project 
+
+        rusmux debug [project]
+
+* Edit an existing project (`$EDITOR` should be set)
+
+        rusmux edit [project]
+
+* Create a new project, and open it in an editor (`$EDITOR` should be set)
+
+        rusmux new [project]
+
+  This creates the project from default template. To create one with just the
+  project name:
+
+        rusmux new [project] --blank
+
+* Check your environment for potential issues
+
+        rusmux doctor
+
+  Checks for `tmux` in `$PATH` and `$SHELL` & `$EDITOR` are set.
