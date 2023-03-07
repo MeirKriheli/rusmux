@@ -28,6 +28,9 @@ fn main() -> Result<(), AppError> {
         Some(("edit", edit_matches)) => {
             actions::edit_project(edit_matches.get_one::<String>("project").unwrap())
         }
+        Some(("delete", delete_matches)) => {
+            actions::delete_project(delete_matches.get_one::<String>("project").unwrap())
+        }
         Some(("new", new_matches)) => actions::new_project(
             new_matches.get_one::<String>("project").unwrap(),
             *new_matches.get_one::<bool>("blank").unwrap(),

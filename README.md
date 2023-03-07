@@ -51,6 +51,10 @@ windows:
 
         rusmux edit [project]
 
+* Delete an existing project (after confirmation)
+
+        rusmux delete [project]
+
 * Create a new project, and open it in an editor (`$EDITOR` should be set)
 
         rusmux new [project]

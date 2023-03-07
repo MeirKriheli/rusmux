@@ -8,6 +8,7 @@ repository = "https://github.com/MeirKriheli/rusmux"
 
 [dependencies]
 clap = { version = "~4.0", features = ["cargo"] }
+dialoguer = "0.10.3"
 directories = "4.0.1"
 glob = "~0.3"
 serde = { version = "1.0", features = ["derive"] }

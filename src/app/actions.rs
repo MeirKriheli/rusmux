@@ -4,9 +4,10 @@ use crate::{
     project_config::ProjectConfig,
     tmux::{self, TmuxProject},
 };
+use dialoguer::Confirm;
 use glob::glob;
-use std::io::prelude::*;
 use std::{env, process::Command};
+use std::{fs::remove_file, io::prelude::*};
 use std::{fs::File, path::Path};
 use which::which;
 
@@ -135,5 +136,23 @@ pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppErro
     Command::new(editor.unwrap())
         .arg(project_file_path)
         .status()?;
+    Ok(())
+}
+
+pub(crate) fn delete_project(project_name: &str) -> Result<(), AppError> {
+    let filename = format!("{}.yml", project_name);
+    let project_file = config::get_path(&filename)?;
+    let project_file_path = Path::new(&project_file);
+    if !project_file_path.exists() {
+        return Err(std::io::Error::from(std::io::ErrorKind::NotFound).into());
+    }
+    let message = format!("Are you sure you want to delete \"{project_name}\"?");
+    if Confirm::new().with_prompt(message).interact()? {
+        remove_file(project_file_path)?;
+        println!("Deleted \"{project_name}\"");
+    } else {
+        println!("Delete aborted");
+    }
+
     Ok(())
 }

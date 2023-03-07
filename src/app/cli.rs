@@ -23,6 +23,11 @@ pub(crate) fn get_cli_command_parser() -> Command {
                 .arg(Arg::new("project").help("Project name").required(true)),
         )
         .subcommand(
+            Command::new("delete")
+                .about("Delete an existing project")
+                .arg(Arg::new("project").help("Project name").required(true)),
+        )
+        .subcommand(
             Command::new("new")
                 .about("Create a new project")
                 .arg(Arg::new("project").help("Project name").required(true))
