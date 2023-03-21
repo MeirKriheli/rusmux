@@ -29,6 +29,17 @@ windows:
   - mail: python -m smtpd -n -c DebuggingServer localhost:1025
 ```
 
+## Install
+
+* Get a compiled binary from the
+  [Releases](https://github.com/MeirKriheli/rusmux/releases) page and place it
+  in your `$PATH`.
+
+* With `cargo`:
+
+        cargo install rusmux
+
+
 ## Commands
 
 * Run a project
