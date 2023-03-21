@@ -17,6 +17,12 @@ pub fn get_path(pattern: &str) -> Result<String, AppError> {
     }
 }
 
+// Return the path of a project file, adding `.yml` extension it
+pub fn get_project_path(project_name: &str) -> Result<String, AppError> {
+    let filename = format!("{}.yml", project_name);
+    get_path(&filename)
+}
+
 // Read project file
 pub fn get_project_yaml(project_name: &str) -> Result<String, AppError> {
     let mut filename = project_name.to_owned();

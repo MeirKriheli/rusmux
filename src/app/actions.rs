@@ -91,8 +91,7 @@ pub(crate) fn check_config() -> Result<(), AppError> {
 }
 
 pub(crate) fn edit_project(project_name: &str) -> Result<(), AppError> {
-    let filename = format!("{}.yml", project_name);
-    let project_file_path = config::get_path(&filename)?;
+    let project_file_path = config::get_project_path(project_name)?;
     if !Path::new(&project_file_path).exists() {
         return Err(std::io::Error::from(std::io::ErrorKind::NotFound).into());
     }
@@ -111,8 +110,7 @@ pub(crate) fn edit_project(project_name: &str) -> Result<(), AppError> {
 }
 
 pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppError> {
-    let filename = format!("{}.yml", project_name);
-    let project_file = config::get_path(&filename)?;
+    let project_file = config::get_project_path(project_name)?;
     let project_file_path = Path::new(&project_file);
     if project_file_path.exists() {
         return Err(std::io::Error::from(std::io::ErrorKind::AlreadyExists).into());
@@ -140,8 +138,7 @@ pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppErro
 }
 
 pub(crate) fn delete_project(project_name: &str) -> Result<(), AppError> {
-    let filename = format!("{}.yml", project_name);
-    let project_file = config::get_path(&filename)?;
+    let project_file = config::get_project_path(project_name)?;
     let project_file_path = Path::new(&project_file);
     if !project_file_path.exists() {
         return Err(std::io::Error::from(std::io::ErrorKind::NotFound).into());
