@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.5] - 2023-03-21
+
+### Documentation
+
+- Added install instructions to README
+
+### Features
+
+- Implemented `copy` command, resolves #3
+
+### Miscellaneous Tasks
+
+- Removed windows from release build
+- Bumped to 0.3.5
+
+### Refactor
+
+- DRY getting project path
+- Changed get paths to `PathBuf` usage
+
 ## [0.3.4] - 2023-03-07
 
 ### Documentation
@@ -15,6 +35,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Update CHANGELOG.md for 0.3.4
+- Bumped to 0.3.4
 
 ## [0.3.3] - 2023-03-01
 
