@@ -18,6 +18,16 @@ pub(crate) fn get_cli_command_parser() -> Command {
                 .arg(Arg::new("project").help("Project name").required(true)),
         )
         .subcommand(
+            Command::new("copy")
+                .about("Copy an existing project to a new one and edit it")
+                .arg(
+                    Arg::new("existing")
+                        .help("Existing project name")
+                        .required(true),
+                )
+                .arg(Arg::new("new").help("New project name").required(true)),
+        )
+        .subcommand(
             Command::new("edit")
                 .about("Edit an existing project")
                 .arg(Arg::new("project").help("Project name").required(true)),

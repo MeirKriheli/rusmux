@@ -35,6 +35,10 @@ fn main() -> Result<(), AppError> {
             new_matches.get_one::<String>("project").unwrap(),
             *new_matches.get_one::<bool>("blank").unwrap(),
         ),
+        Some(("copy", copy_matches)) => actions::copy_project(
+            copy_matches.get_one::<String>("existing").unwrap(),
+            copy_matches.get_one::<String>("new").unwrap(),
+        ),
         _ => unreachable!(),
     }
 }

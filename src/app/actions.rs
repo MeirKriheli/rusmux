@@ -6,7 +6,7 @@ use crate::{
 };
 use dialoguer::Confirm;
 use glob::glob;
-use std::{env, process::Command};
+use std::{env, fs::copy, process::Command};
 use std::{fs::remove_file, io::prelude::*};
 use std::{fs::File, path::Path};
 use which::which;
@@ -148,5 +148,35 @@ pub(crate) fn delete_project(project_name: &str) -> Result<(), AppError> {
         println!("Delete aborted");
     }
 
+    Ok(())
+}
+
+pub(crate) fn copy_project(existing: &str, new: &str) -> Result<(), AppError> {
+    let existing_path = config::get_project_path(existing)?;
+    if !existing_path.exists() {
+        return Err(AppError::Message(format!(
+            "Existing project {} not found",
+            &existing_path.display()
+        )));
+    }
+
+    let new_path = config::get_project_path(new)?;
+    if new_path.exists() {
+        return Err(AppError::Message(format!(
+            "New project {} already exists",
+            &new_path.display()
+        )));
+    }
+
+    copy(&existing_path, &new_path)?;
+    let editor = env::var("EDITOR");
+    if editor.is_err() {
+        return Err(AppError::Message(format!(
+            "$EDITOR is not set, created the file {}",
+            &new_path.display()
+        )));
+    }
+
+    Command::new(editor.unwrap()).arg(new_path).status()?;
     Ok(())
 }

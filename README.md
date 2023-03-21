@@ -64,6 +64,10 @@ windows:
 
         rusmux new [project] --blank
 
+* Copy an existing project to a new one and edit it (`$EDITOR` should be set)
+
+        rusmux copy [existing] [new]
+
 * Check your environment for potential issues
 
         rusmux doctor
