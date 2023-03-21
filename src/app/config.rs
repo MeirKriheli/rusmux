@@ -1,26 +1,27 @@
 use directories::ProjectDirs;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::Path;
+use std::path::PathBuf;
 
 use crate::error::AppError;
 
 // Returns the path of a file/pattern inside the config dir
-pub fn get_path(pattern: &str) -> Result<String, AppError> {
+pub fn get_path(pattern: &str) -> Result<PathBuf, AppError> {
     let proj_dirs =
         ProjectDirs::from("org", crate_authors!(), crate_name!()).ok_or(AppError::Path)?;
     let config_dir = proj_dirs.config_dir();
 
-    match Path::new(&config_dir).join(pattern).to_str() {
-        None => Err(AppError::Path),
-        Some(s) => Ok(s.into()),
-    }
+    let mut path = PathBuf::from(config_dir);
+    path.push(pattern);
+    Ok(path)
 }
 
 // Return the path of a project file, adding `.yml` extension it
-pub fn get_project_path(project_name: &str) -> Result<String, AppError> {
-    let filename = format!("{}.yml", project_name);
-    get_path(&filename)
+pub fn get_project_path(project_name: &str) -> Result<PathBuf, AppError> {
+    let mut file_path = get_path(project_name)?;
+    file_path.set_extension("yml");
+
+    Ok(file_path)
 }
 
 // Read project file

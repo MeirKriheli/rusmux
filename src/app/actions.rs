@@ -34,12 +34,9 @@ macro_rules! default_template {
 pub(crate) fn list_projects() -> Result<(), AppError> {
     let pattern = config::get_path("*.yml")?;
 
-    for project in glob(&pattern).expect("Failed to glob config dir") {
+    for project in glob(&pattern.to_string_lossy()).expect("Failed to glob config dir") {
         match project {
-            Ok(path) => println!(
-                "{}",
-                Path::new(&path).file_stem().unwrap().to_str().unwrap()
-            ),
+            Ok(path) => println!("{}", &path.file_stem().unwrap().to_string_lossy()),
             Err(e) => println!("{e:?}"),
         }
     }
@@ -99,7 +96,8 @@ pub(crate) fn edit_project(project_name: &str) -> Result<(), AppError> {
     let editor = env::var("EDITOR");
     if editor.is_err() {
         return Err(AppError::Message(format!(
-            "$EDITOR is not set, the file path to edit is {project_file_path}"
+            "$EDITOR is not set, the file path to edit is {}",
+            &project_file_path.display()
         )));
     }
 
@@ -110,8 +108,7 @@ pub(crate) fn edit_project(project_name: &str) -> Result<(), AppError> {
 }
 
 pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppError> {
-    let project_file = config::get_project_path(project_name)?;
-    let project_file_path = Path::new(&project_file);
+    let project_file_path = config::get_project_path(project_name)?;
     if project_file_path.exists() {
         return Err(std::io::Error::from(std::io::ErrorKind::AlreadyExists).into());
     }
@@ -121,13 +118,14 @@ pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppErro
         format!(default_template!(), project_name)
     };
 
-    let mut new_file = File::create(project_file_path)?;
+    let mut new_file = File::create(&project_file_path)?;
     new_file.write_all(content.as_bytes())?;
 
     let editor = env::var("EDITOR");
     if editor.is_err() {
         return Err(AppError::Message(format!(
-            "$EDITOR is not set, created the file {project_file}"
+            "$EDITOR is not set, created the file {}",
+            &project_file_path.display()
         )));
     }
 
@@ -138,8 +136,7 @@ pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppErro
 }
 
 pub(crate) fn delete_project(project_name: &str) -> Result<(), AppError> {
-    let project_file = config::get_project_path(project_name)?;
-    let project_file_path = Path::new(&project_file);
+    let project_file_path = config::get_project_path(project_name)?;
     if !project_file_path.exists() {
         return Err(std::io::Error::from(std::io::ErrorKind::NotFound).into());
     }
