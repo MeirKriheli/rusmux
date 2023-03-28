@@ -1,5 +1,5 @@
 use directories::ProjectDirs;
-use std::fs::File;
+use std::fs::{File, create_dir_all};
 use std::io::prelude::*;
 use std::path::PathBuf;
 
@@ -12,6 +12,7 @@ pub fn get_path(pattern: &str) -> Result<PathBuf, AppError> {
     let config_dir = proj_dirs.config_dir();
 
     let mut path = PathBuf::from(config_dir);
+    create_dir_all(&path)?;
     path.push(pattern);
     Ok(path)
 }
