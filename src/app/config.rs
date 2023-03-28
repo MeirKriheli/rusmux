@@ -1,5 +1,5 @@
 use directories::ProjectDirs;
-use std::fs::{File, create_dir_all};
+use std::fs::{create_dir_all, File};
 use std::io::prelude::*;
 use std::path::PathBuf;
 
