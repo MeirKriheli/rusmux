@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.6] - 2023-03-28
+
+### Bug Fixes
+
+- Added config dir creation, resolves #4
+
+### Features
+
+- Implemented `stop` command and `on_project_stop` resolves #1
+
 ## [0.3.5] - 2023-03-21
 
 ### Documentation
