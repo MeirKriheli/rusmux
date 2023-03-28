@@ -39,6 +39,9 @@ fn main() -> Result<(), AppError> {
             copy_matches.get_one::<String>("existing").unwrap(),
             copy_matches.get_one::<String>("new").unwrap(),
         ),
+        Some(("stop", stop_matches)) => {
+            actions::stop(stop_matches.get_one::<String>("project").unwrap())
+        }
         _ => unreachable!(),
     }
 }

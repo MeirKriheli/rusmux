@@ -16,6 +16,9 @@ pub struct ProjectConfig {
     pub on_project_exit: Option<Vec<String>>,
     #[serde(default)]
     #[serde(deserialize_with = "stringorvec::deserialize_optional_vec_or_string")]
+    pub on_project_stop: Option<Vec<String>>,
+    #[serde(default)]
+    #[serde(deserialize_with = "stringorvec::deserialize_optional_vec_or_string")]
     pub pre_window: Option<Vec<String>>,
     pub windows: Option<Vec<Window>>,
 }

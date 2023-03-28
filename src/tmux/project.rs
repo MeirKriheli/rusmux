@@ -139,6 +139,18 @@ impl<'a> TmuxProject<'a> {
         }
     }
 
+    fn get_stop_session_commands(&self) -> Vec<Commands> {
+        vec![
+            Commands::StopSession {
+                session_name: &self.project.project_name,
+            },
+            Commands::ProjectEvent {
+                event_name: "stop",
+                on_event: &self.project.on_project_stop,
+            },
+        ]
+    }
+
     fn get_window_commands(&'a self, idx: usize, w: &'a Window) -> Vec<Commands> {
         let mut commands = Vec::new();
         let project_name = &self.project.project_name;
@@ -221,6 +233,14 @@ impl<'a> TmuxProject<'a> {
         } else {
             self.get_commands()
         };
+        for cmd in cmds {
+            cmd.run()?;
+        }
+        Ok(())
+    }
+
+    pub fn stop(&self) -> Result<(), TmuxError> {
+        let cmds = self.get_stop_session_commands();
         for cmd in cmds {
             cmd.run()?;
         }

@@ -48,5 +48,10 @@ pub(crate) fn get_cli_command_parser() -> Command {
                         .help("Don't use a template for the file"),
                 ),
         )
+        .subcommand(
+            Command::new("stop")
+                .about("Stop the project's session")
+                .arg(Arg::new("project").help("Project name").required(true)),
+        )
         .subcommand(Command::new("doctor").about("Check your configuration"))
 }

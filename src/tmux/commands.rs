@@ -60,6 +60,9 @@ pub(crate) enum Commands<'a> {
     AttachSession {
         session_name: &'a str,
     },
+    StopSession {
+        session_name: &'a str,
+    },
 }
 
 impl<'a> Commands<'a> {
@@ -205,6 +208,10 @@ impl<'a> Commands<'a> {
         )
     }
 
+    fn fmt_stop_session(f: &mut fmt::Formatter, session_name: &str) -> Result<(), fmt::Error> {
+        write!(f, "{TMUX_BIN} kill-session -t {session_name}")
+    }
+
     pub fn run(&self) -> Result<(), TmuxError> {
         match self {
             Commands::Server {
@@ -252,6 +259,7 @@ impl<'a> Commands<'a> {
                 pane_index,
             } => Commands::run_select_pane(session_name, *window_index, *pane_index),
             Commands::AttachSession { session_name } => Commands::run_attach_session(session_name),
+            Commands::StopSession { session_name } => Commands::run_stop_session(session_name),
         }
     }
 
@@ -438,6 +446,18 @@ impl<'a> Commands<'a> {
             )))
         }
     }
+
+    fn run_stop_session(session_name: &str) -> Result<(), TmuxError> {
+        let args = ["kill-session", "-t", session_name];
+        let res = Command::new(TMUX_BIN).args(args).status()?;
+        if res.success() {
+            Ok(())
+        } else {
+            Err(TmuxError::Message(format!(
+                "Cannot kill session {session_name}"
+            )))
+        }
+    }
 }
 
 impl<'a> fmt::Display for Commands<'a> {
@@ -499,6 +519,7 @@ impl<'a> fmt::Display for Commands<'a> {
             Commands::AttachSession { session_name } => {
                 Commands::fmt_attach_session(f, session_name)
             }
+            Commands::StopSession { session_name } => Commands::fmt_stop_session(f, session_name),
         }
     }
 }

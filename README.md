@@ -16,6 +16,7 @@ project_root: ~/src/demo
 on_project_start:
   - sudo systemctl start postgresql
   - sudo systemctl start mysqld
+# on_project_stop: 
 pre_window:
   - workon demo
   - cd demo
@@ -61,6 +62,10 @@ windows:
 * Edit an existing project (`$EDITOR` should be set)
 
         rusmux edit [project]
+
+* Stop project's session
+
+        rusmux stop [project]
 
 * Delete an existing project (after confirmation)
 

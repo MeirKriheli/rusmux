@@ -180,3 +180,10 @@ pub(crate) fn copy_project(existing: &str, new: &str) -> Result<(), AppError> {
     Command::new(editor.unwrap()).arg(new_path).status()?;
     Ok(())
 }
+
+pub(crate) fn stop(project_name: &str) -> Result<(), AppError> {
+    let entries = config::get_project_yaml(project_name)?;
+    let project = ProjectConfig::try_from(entries)?;
+    let tmux = TmuxProject::new(&project)?;
+    Ok(tmux.stop()?)
+}
