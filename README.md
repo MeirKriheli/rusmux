@@ -32,6 +32,11 @@ windows:
 
 ## Install
 
+* Arch Linux users can install [rusmux from AUR](https://aur.archlinux.org/packages/rusmux),
+  e.g. (using `paru`):
+
+        paru -S rusmux
+
 * Get a compiled binary from the
   [Releases](https://github.com/MeirKriheli/rusmux/releases) page and place it
   in your `$PATH`.
