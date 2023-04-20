@@ -2,6 +2,7 @@ use super::error::ProjectParseError;
 use super::stringorvec;
 use super::window::Window;
 use serde::{Deserialize, Serialize};
+use serde_yaml::Value;
 use std::convert::TryFrom;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -21,6 +22,14 @@ pub struct ProjectConfig {
     #[serde(deserialize_with = "stringorvec::deserialize_optional_vec_or_string")]
     pub pre_window: Option<Vec<String>>,
     pub windows: Option<Vec<Window>>,
+}
+
+impl TryFrom<Value> for ProjectConfig {
+    type Error = ProjectParseError;
+
+    fn try_from(yaml: Value) -> Result<Self, Self::Error> {
+        serde_yaml::from_value(yaml).map_err(|e| ProjectParseError(format!("{e}")))
+    }
 }
 
 impl TryFrom<String> for ProjectConfig {

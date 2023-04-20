@@ -1,4 +1,6 @@
 use directories::ProjectDirs;
+use serde::Deserialize;
+use serde_yaml::Value;
 use std::fs::{create_dir_all, File};
 use std::io::prelude::*;
 use std::path::PathBuf;
@@ -12,7 +14,7 @@ pub fn get_path(pattern: &str) -> Result<PathBuf, AppError> {
     let config_dir = proj_dirs.config_dir();
 
     let mut path = PathBuf::from(config_dir);
-    create_dir_all(&path)?;
+    create_dir_all(&path).map_err(|e| AppError::ProjectCreateConfigDir(path.clone(), e))?;
     path.push(pattern);
     Ok(path)
 }
@@ -26,13 +28,18 @@ pub fn get_project_path(project_name: &str) -> Result<PathBuf, AppError> {
 }
 
 // Read project file
-pub fn get_project_yaml(project_name: &str) -> Result<String, AppError> {
+pub fn get_project_yaml(project_name: &str) -> Result<Value, AppError> {
     let mut filename = project_name.to_owned();
     filename.push_str(".yml");
 
     let project_file_path = get_path(&filename)?;
     let mut contents = String::new();
-    File::open(project_file_path)?.read_to_string(&mut contents)?;
+    File::open(&project_file_path)
+        .map_err(|_| AppError::ProjectFileNotFound(project_file_path.clone()))?
+        .read_to_string(&mut contents)
+        .map_err(|e| AppError::ProjectFileReadError(project_file_path.clone(), e))?;
 
-    Ok(contents)
+    let de = serde_yaml::Deserializer::from_str(&contents);
+    Value::deserialize(de)
+        .map_err(|e| AppError::YamlParseError(project_file_path.clone(), format!("{e}")))
 }

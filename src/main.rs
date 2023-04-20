@@ -7,13 +7,13 @@ mod project_config;
 mod tmux;
 
 use app::{actions, cli};
-use error::AppError;
+use error::AppErrorForDisplay;
 
-fn main() -> Result<(), AppError> {
+fn main() -> Result<(), AppErrorForDisplay> {
     let matches = cli::get_cli_command_parser().get_matches();
 
     if let Some(project_name) = matches.get_one::<String>("project") {
-        return actions::run_project(project_name);
+        return actions::run_project(project_name).map_err(|e| e.into());
     }
 
     match matches.subcommand() {
@@ -44,4 +44,5 @@ fn main() -> Result<(), AppError> {
         }
         _ => unreachable!(),
     }
+    .map_err(|e| e.into())
 }

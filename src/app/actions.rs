@@ -90,27 +90,26 @@ pub(crate) fn check_config() -> Result<(), AppError> {
 pub(crate) fn edit_project(project_name: &str) -> Result<(), AppError> {
     let project_file_path = config::get_project_path(project_name)?;
     if !Path::new(&project_file_path).exists() {
-        return Err(std::io::Error::from(std::io::ErrorKind::NotFound).into());
+        return Err(AppError::ProjectFileNotFound(project_file_path));
     }
 
     let editor = env::var("EDITOR");
     if editor.is_err() {
-        return Err(AppError::Message(format!(
-            "$EDITOR is not set, the file path to edit is {}",
-            &project_file_path.display()
-        )));
+        return Err(AppError::EditorNotSet(project_file_path));
     }
 
-    Command::new(editor.unwrap())
-        .arg(project_file_path)
-        .status()?;
+    let mut binding = Command::new(editor.unwrap());
+    let cmd = binding.arg(project_file_path);
+
+    cmd.status()
+        .map_err(|_| AppError::CommandRunError(format!("{cmd:?}")))?;
     Ok(())
 }
 
 pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppError> {
     let project_file_path = config::get_project_path(project_name)?;
     if project_file_path.exists() {
-        return Err(std::io::Error::from(std::io::ErrorKind::AlreadyExists).into());
+        return Err(AppError::ProjectFileExists(project_file_path));
     }
     let content = if blank {
         format!("project_name: {project_name}")
@@ -118,31 +117,38 @@ pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppErro
         format!(default_template!(), project_name)
     };
 
-    let mut new_file = File::create(&project_file_path)?;
-    new_file.write_all(content.as_bytes())?;
+    let mut new_file = File::create(&project_file_path)
+        .map_err(|e| AppError::ProjectFileCreate(project_file_path.clone(), e))?;
+    new_file
+        .write_all(content.as_bytes())
+        .map_err(|e| AppError::ProjectFileWriteError(project_file_path.clone(), e))?;
 
     let editor = env::var("EDITOR");
     if editor.is_err() {
-        return Err(AppError::Message(format!(
-            "$EDITOR is not set, created the file {}",
-            &project_file_path.display()
-        )));
+        return Err(AppError::EditorNotSet(project_file_path));
     }
 
-    Command::new(editor.unwrap())
-        .arg(project_file_path)
-        .status()?;
+    let mut binding = Command::new(editor.unwrap());
+    let cmd = binding.arg(project_file_path);
+
+    cmd.status()
+        .map_err(|_| AppError::CommandRunError(format!("{cmd:?}")))?;
     Ok(())
 }
 
 pub(crate) fn delete_project(project_name: &str) -> Result<(), AppError> {
     let project_file_path = config::get_project_path(project_name)?;
     if !project_file_path.exists() {
-        return Err(std::io::Error::from(std::io::ErrorKind::NotFound).into());
+        return Err(AppError::ProjectFileNotFound(project_file_path));
     }
     let message = format!("Are you sure you want to delete \"{project_name}\"?");
-    if Confirm::new().with_prompt(message).interact()? {
-        remove_file(project_file_path)?;
+    let confirmation = Confirm::new()
+        .with_prompt(message)
+        .interact()
+        .map_err(AppError::Prompt)?;
+    if confirmation {
+        remove_file(&project_file_path)
+            .map_err(|e| AppError::ProjectFileDelete(project_file_path, e))?;
         println!("Deleted \"{project_name}\"");
     } else {
         println!("Delete aborted");
@@ -154,30 +160,26 @@ pub(crate) fn delete_project(project_name: &str) -> Result<(), AppError> {
 pub(crate) fn copy_project(existing: &str, new: &str) -> Result<(), AppError> {
     let existing_path = config::get_project_path(existing)?;
     if !existing_path.exists() {
-        return Err(AppError::Message(format!(
-            "Existing project {} not found",
-            &existing_path.display()
-        )));
+        return Err(AppError::ProjectFileNotFound(existing_path));
     }
 
     let new_path = config::get_project_path(new)?;
     if new_path.exists() {
-        return Err(AppError::Message(format!(
-            "New project {} already exists",
-            &new_path.display()
-        )));
+        return Err(AppError::ProjectFileExists(new_path));
     }
 
-    copy(&existing_path, &new_path)?;
+    copy(&existing_path, &new_path)
+        .map_err(|e| AppError::ProjectCopy(existing_path, new_path.clone(), e))?;
     let editor = env::var("EDITOR");
     if editor.is_err() {
-        return Err(AppError::Message(format!(
-            "$EDITOR is not set, created the file {}",
-            &new_path.display()
-        )));
+        return Err(AppError::EditorNotSet(new_path));
     }
 
-    Command::new(editor.unwrap()).arg(new_path).status()?;
+    let mut binding = Command::new(editor.unwrap());
+    let cmd = binding.arg(&new_path);
+
+    cmd.status()
+        .map_err(|_| AppError::CommandRunError(format!("{cmd:?}")))?;
     Ok(())
 }
 
