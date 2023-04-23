@@ -40,3 +40,6 @@ rust-toolchain-version = "1.67.1"
 ci = ["github"]
 # Target platforms to build apps for (Rust target-triple syntax)
 targets = ["x86_64-unknown-linux-gnu", "x86_64-apple-darwin", "aarch64-apple-darwin"]
+
+[package.metadata.release]
+pre-release-hook = ["git-cliff", "-o", "CHANGELOG.md", "--tag", "{{version}}"]
