@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.7] - 2023-04-23
+
+### Bug Fixes
+
+- Added human readable errors, resolves #5
+
+### Documentation
+
+- Added AUR install instructions
+
+### Miscellaneous Tasks
+
+- Removed MS Win target from cargo-dist
+- Updated cargo-dist, added Apple silicon target
+- Updated dependencies
+- Added git-cliff as pre-release hook
+
 ## [0.3.6] - 2023-03-28
 
 ### Bug Fixes
@@ -11,6 +28,10 @@ All notable changes to this project will be documented in this file.
 ### Features
 
 - Implemented `stop` command and `on_project_stop` resolves #1
+
+### Miscellaneous Tasks
+
+- Bumped to 0.3.6
 
 ## [0.3.5] - 2023-03-21
 
