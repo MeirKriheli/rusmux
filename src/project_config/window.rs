@@ -1,3 +1,5 @@
+//! Handles a [Window] de-serialization, an optional section
+//! of project's configuration.
 use super::error::ProjectParseError;
 use serde::de::{self, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
@@ -5,11 +7,53 @@ use serde_yaml::{self, Value};
 use std::convert::TryFrom;
 use std::fmt;
 
+/// Represents each windows in the project configuration. Since it
+/// can be specified in several ways, it implements a custom visitor
+/// for [serde].
+///
+/// For example:
+///
+/// ```yaml
+/// test:
+/// ```
+/// Will be a window named `test` with a single pane running nothing with
+/// `tiled` layout.
+///
+/// ```yaml
+/// test2 window: vim
+/// ```
+/// Will be a window named `test2 window` with a single pane running `vim` with
+/// `tiled` layout.
+///
+/// ```yaml
+/// window3:
+///   panes:
+///     - vim
+///     - #
+///     - npm run serve,
+/// ```
+/// Will be a window named `window3` with 3 panes running `vim`, nothing,
+/// & `npm run serve` and `tiled` layout.
+///
+/// ```yml
+///
+/// window4:
+///   layout: main-vertical
+///   panes:
+///     - vim
+///     - #
+///     - npm run serve,
+/// ```
+/// Will be a window named `window4` with 3 panes running `vim`, nothing,
+/// & `npm run serve` and `main-vertical` layout.
 #[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Window {
+    /// The name of the window
     pub name: String,
+    /// The tmux layout of the window. Defaults to `tiled`.
     #[serde(default = "tiled")]
     pub layout: String,
+    /// The window's panes, each with an optional command to run.
     pub panes: Vec<Option<String>>,
 }
 
@@ -30,6 +74,8 @@ impl<'de> Deserialize<'de> for Window {
     }
 }
 
+/// Implements the visitor which supports the various ways a [Window],
+/// its pane(s) and layout can be specified.
 struct WindowVisitor;
 
 impl<'de> Visitor<'de> for WindowVisitor {

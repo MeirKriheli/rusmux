@@ -1,5 +1,7 @@
+//! Project config parsing error.
 use std::{error::Error, fmt::Display};
 
+/// The project config parsing error, wrapping the de-serialization error.
 #[derive(Debug)]
 pub struct ProjectParseError(pub String);
 
