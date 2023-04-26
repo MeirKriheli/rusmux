@@ -14,7 +14,7 @@ pub(crate) enum Commands<'a> {
         project_name: &'a str,
         project_root: &'a Option<String>,
     },
-    /// Run on_project_<event> commands
+    /// Run `on_project_<event>` commands
     ProjectEvent {
         event_name: &'a str,
         on_event: &'a Option<Vec<String>>,
