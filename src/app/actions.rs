@@ -102,7 +102,7 @@ pub(crate) fn edit_project(project_name: &str) -> Result<(), AppError> {
     let cmd = binding.arg(project_file_path);
 
     cmd.status()
-        .map_err(|_| AppError::CommandRunError(format!("{cmd:?}")))?;
+        .map_err(|_| AppError::CommandRun(format!("{cmd:?}")))?;
     Ok(())
 }
 
@@ -121,7 +121,7 @@ pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppErro
         .map_err(|e| AppError::ProjectFileCreate(project_file_path.clone(), e))?;
     new_file
         .write_all(content.as_bytes())
-        .map_err(|e| AppError::ProjectFileWriteError(project_file_path.clone(), e))?;
+        .map_err(|e| AppError::ProjectFileWrite(project_file_path.clone(), e))?;
 
     let editor = env::var("EDITOR");
     if editor.is_err() {
@@ -132,7 +132,7 @@ pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppErro
     let cmd = binding.arg(project_file_path);
 
     cmd.status()
-        .map_err(|_| AppError::CommandRunError(format!("{cmd:?}")))?;
+        .map_err(|_| AppError::CommandRun(format!("{cmd:?}")))?;
     Ok(())
 }
 
@@ -179,7 +179,7 @@ pub(crate) fn copy_project(existing: &str, new: &str) -> Result<(), AppError> {
     let cmd = binding.arg(&new_path);
 
     cmd.status()
-        .map_err(|_| AppError::CommandRunError(format!("{cmd:?}")))?;
+        .map_err(|_| AppError::CommandRun(format!("{cmd:?}")))?;
     Ok(())
 }
 

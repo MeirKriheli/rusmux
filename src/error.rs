@@ -1,3 +1,4 @@
+//! Top level error module.
 use crate::project_config::ProjectParseError;
 use crate::tmux::TmuxError;
 
@@ -6,47 +7,64 @@ use std::io;
 use std::path::PathBuf;
 use thiserror::Error;
 
+/// Top level error.
 #[derive(Error, Debug)]
 pub enum AppError {
+    /// Problem getting the configuration directory.
     #[error("Can not get config path in the user's home directory")]
-    Path,
+    ConfigPath,
+    /// Could show the confirmation prompt.
     #[error("Can not run prompt: {0}")]
     Prompt(io::Error),
-    #[error("{0}")]
-    ProjectParseError(#[from] ProjectParseError),
+    /// Error during `yaml` parsing.
     #[error("Could not parse yaml from {0}: {1}")]
-    YamlParseError(PathBuf, String),
+    YamlParse(PathBuf, String),
+    /// Error mapping the parsed yaml to
+    /// [ProjectConfig](crate::project_config::project::ProjectConfig).
+    #[error("{0}")]
+    ProjectParse(#[from] ProjectParseError),
+    /// Error running `tmux` operation.
     #[error(transparent)]
-    TmuxError(#[from] TmuxError),
+    TmuxOperation(#[from] TmuxError),
+    /// Problem copying project file from `src` to `dest`
     #[error("Cannoy copy {0} to {1}: {2}")]
     ProjectCopy(PathBuf, PathBuf, io::Error),
+    /// Problem creating the configuration directory.
     #[error("Could not create config dir {0}: {1}")]
     ProjectCreateConfigDir(PathBuf, io::Error),
+    /// Error during file creation.
     #[error("Could not create project file {0}: {1}")]
     ProjectFileCreate(PathBuf, io::Error),
+    /// Error during file deletion.
     #[error("Can not delete Project file {0}: {1}")]
     ProjectFileDelete(PathBuf, io::Error),
+    /// The project file already exists.
     #[error("Project file {0} already exists")]
     ProjectFileExists(PathBuf),
+    /// Can not find the project file.
     #[error("Project file {0} not found")]
     ProjectFileNotFound(PathBuf),
+    /// Error reading file content.
     #[error("Could not read content from project file {0}: {1}")]
-    ProjectFileReadError(PathBuf, io::Error),
+    ProjectFileRead(PathBuf, io::Error),
+    /// Error writing file content.
     #[error("Could not write content to project file {0}: {1}")]
-    ProjectFileWriteError(PathBuf, io::Error),
+    ProjectFileWrite(PathBuf, io::Error),
+    /// `$EDITOR` environment var is not set.
     #[error("$EDITOR is not set, the file path to edit is {0}")]
     EditorNotSet(PathBuf),
+    /// Error running a command
     #[error("Could not run command {0}")]
-    CommandRunError(String),
+    CommandRun(String),
 }
 
 /// Used for displaying the error on exit.
 ///
-/// By default existing with an error from main, it displays the
-/// debug version, which is not human friendly.
+/// By default, existing with an error from `main()` displays the
+/// debug information of the error, which is not human friendly.
 ///
-/// To mitigate, it wraps [AppError], and implements [Debug] just
-/// like [Display].
+/// To mitigate, this wraps [AppError], and implements [Debug] as
+/// [Display].
 #[derive(Error)]
 pub(crate) struct AppErrorForDisplay(AppError);
 
