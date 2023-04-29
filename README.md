@@ -4,6 +4,21 @@ Built primarily to replace
 [tmuxinator](https://github.com/tmuxinator/tmuxinator) while using it's
 yaml files.
 
+
+`tmuxinator` is written in Ruby, and various packages/gem upgrades broke
+it occasionally, having me scrambling for a fix.
+
+On top of that, installing it on various servers missing Ruby installation was
+a chore.
+
+Thus [rusmux](https://github.com/MeirKriheli/rusmux) was born. I've used it
+as an opportunity to:
+
+* Work with the existing `.yml` project files of `tmuxinator`.
+* Provide a single binary I can copy around.
+* Further my knowledge and understanding of [Rust](https://www.rust-lang.org/)
+  and the tooling around it.
+
 ## Example
 
 ```sh
