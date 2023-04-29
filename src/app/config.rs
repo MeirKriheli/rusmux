@@ -1,3 +1,4 @@
+//! Configuration directory path helpers.
 use directories::ProjectDirs;
 use serde::Deserialize;
 use serde_yaml::Value;
@@ -7,7 +8,7 @@ use std::path::PathBuf;
 
 use crate::error::AppError;
 
-// Returns the path of a file/pattern inside the config dir
+/// Returns the path of a file/pattern inside the configuration directory.
 pub fn get_path(pattern: &str) -> Result<PathBuf, AppError> {
     let proj_dirs =
         ProjectDirs::from("org", crate_authors!(), crate_name!()).ok_or(AppError::ConfigPath)?;
@@ -19,7 +20,7 @@ pub fn get_path(pattern: &str) -> Result<PathBuf, AppError> {
     Ok(path)
 }
 
-// Return the path of a project file, adding `.yml` extension it
+/// Returns the path of a project file, adding `.yml` extension it.
 pub fn get_project_path(project_name: &str) -> Result<PathBuf, AppError> {
     let mut file_path = get_path(project_name)?;
     file_path.set_extension("yml");
@@ -27,7 +28,7 @@ pub fn get_project_path(project_name: &str) -> Result<PathBuf, AppError> {
     Ok(file_path)
 }
 
-// Read project file
+/// Read project file, parse it to [`serde_yaml::Value`].
 pub fn get_project_yaml(project_name: &str) -> Result<Value, AppError> {
     let mut filename = project_name.to_owned();
     filename.push_str(".yml");

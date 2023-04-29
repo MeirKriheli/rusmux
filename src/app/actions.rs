@@ -1,3 +1,4 @@
+//! Handles the command requested by the CLI.
 use super::config;
 use crate::{
     error::AppError,
@@ -11,6 +12,7 @@ use std::{fs::remove_file, io::prelude::*};
 use std::{fs::File, path::Path};
 use which::which;
 
+/// The default template used when create a new project.
 macro_rules! default_template {
     () => {
         "project_name: {}
@@ -30,7 +32,7 @@ macro_rules! default_template {
     };
 }
 
-/// List the project files in the configuration directory
+/// List the projects in the configuration directory.
 pub(crate) fn list_projects() -> Result<(), AppError> {
     let pattern = config::get_path("*.yml")?;
 
@@ -44,7 +46,7 @@ pub(crate) fn list_projects() -> Result<(), AppError> {
     Ok(())
 }
 
-// Parses the project file, prints shell commands
+/// Parses the project file and prints the shell commands for session creation.
 pub(crate) fn debug_project(project_name: &str) -> Result<(), AppError> {
     let entries = config::get_project_yaml(project_name)?;
     let project = ProjectConfig::try_from(entries)?;
@@ -53,7 +55,7 @@ pub(crate) fn debug_project(project_name: &str) -> Result<(), AppError> {
     Ok(())
 }
 
-/// Parses the project file, creates the tmux session
+/// Parses the project file, runs the commands to create the tmux session.
 pub fn run_project(project_name: &str) -> Result<(), AppError> {
     println!("Starting project {project_name}");
 
@@ -63,6 +65,8 @@ pub fn run_project(project_name: &str) -> Result<(), AppError> {
     Ok(tmux.run()?)
 }
 
+#[doc(hidden)]
+/// Helper mapping a [`bool`] value to `"Yes"` or `"No"`.
 fn bool_to_yesno(val: bool) -> &'static str {
     if val {
         "Yes"
@@ -71,7 +75,11 @@ fn bool_to_yesno(val: bool) -> &'static str {
     }
 }
 
-// Check the configuration
+/// Checks environment configuration.
+///
+/// - `tmux` in `$PATH`.
+/// - `$SHELL` is set.
+/// - `$EDITOR` are set.
 pub(crate) fn check_config() -> Result<(), AppError> {
     let have_tmux = which(tmux::TMUX_BIN).is_ok();
     let have_editor = env::var("EDITOR").is_ok();
@@ -87,6 +95,7 @@ pub(crate) fn check_config() -> Result<(), AppError> {
     Ok(())
 }
 
+/// Opens an existing project file with `$EDITOR`.
 pub(crate) fn edit_project(project_name: &str) -> Result<(), AppError> {
     let project_file_path = config::get_project_path(project_name)?;
     if !Path::new(&project_file_path).exists() {
@@ -106,6 +115,8 @@ pub(crate) fn edit_project(project_name: &str) -> Result<(), AppError> {
     Ok(())
 }
 
+/// Creates a new project file, optinally from [`default_template`], and
+/// opens it with `$EDITOR`.
 pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppError> {
     let project_file_path = config::get_project_path(project_name)?;
     if project_file_path.exists() {
@@ -136,6 +147,7 @@ pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppErro
     Ok(())
 }
 
+/// Deletes a project from the configuration directory. Asks for confirmation.
 pub(crate) fn delete_project(project_name: &str) -> Result<(), AppError> {
     let project_file_path = config::get_project_path(project_name)?;
     if !project_file_path.exists() {
@@ -157,6 +169,7 @@ pub(crate) fn delete_project(project_name: &str) -> Result<(), AppError> {
     Ok(())
 }
 
+/// Copies an existing project to a new one, and opens it with `$EDITOR`.
 pub(crate) fn copy_project(existing: &str, new: &str) -> Result<(), AppError> {
     let existing_path = config::get_project_path(existing)?;
     if !existing_path.exists() {
@@ -183,6 +196,7 @@ pub(crate) fn copy_project(existing: &str, new: &str) -> Result<(), AppError> {
     Ok(())
 }
 
+/// Kills the project's session.
 pub(crate) fn stop(project_name: &str) -> Result<(), AppError> {
     let entries = config::get_project_yaml(project_name)?;
     let project = ProjectConfig::try_from(entries)?;
