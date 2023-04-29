@@ -1,7 +1,7 @@
 //! CLI arguments parser.
 use clap::{command, Arg, ArgAction, Command};
 
-/// Returns [`clapp::Command`] for the cli application.
+/// Returns [`clap::Command`] for the CLI application.
 pub(crate) fn get_cli_command_parser() -> Command {
     command!()
         .arg_required_else_help(true)
