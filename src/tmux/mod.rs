@@ -1,3 +1,4 @@
+//! Tmux operations.
 mod commands;
 mod error;
 mod project;

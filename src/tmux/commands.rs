@@ -1,3 +1,4 @@
+//! The various tmux operations commands.
 use super::project::TMUX_BIN;
 use super::TmuxError;
 
@@ -7,24 +8,30 @@ use std::env::set_current_dir;
 use std::process::Command;
 use std::{env, fmt};
 
+/// The commands. Implemented as an enum instead of traits/structs
+/// to prevent dynamic dispatch.
+///
+/// Implements [`Display`](std::fmt::Display), formatting the commands a shell
+/// command which is used to display the shell script for the `debug`
+/// cli command.
 #[derive(Debug)]
 pub(crate) enum Commands<'a> {
-    /// Start the server and cd to the work directory if available
+    /// Start the server and change into the work directory if specified.
     Server {
         project_name: &'a str,
         project_root: &'a Option<String>,
     },
-    /// Run `on_project_<event>` commands
+    /// Runs the various `on_project_<event>` commands.
     ProjectEvent {
         event_name: &'a str,
         on_event: &'a Option<Vec<String>>,
     },
-    /// Start the new tmux session, and cd again (for tmux < 1.9 compat)
+    /// Start the new tmux session, and cd again (for tmux < 1.9 compat).
     Session {
         project_name: &'a str,
         first_window_name: Option<&'a str>,
     },
-    /// Send Keys command
+    /// `send-keys` command.
     SendKeys {
         command: String,
         session_name: &'a str,
@@ -32,37 +39,41 @@ pub(crate) enum Commands<'a> {
         pane_index: Option<usize>,
         comment: Option<String>,
     },
+    /// `new-window` command.
     NewWindow {
         session_name: &'a str,
         window_name: &'a str,
         window_index: usize,
         project_root: &'a Option<String>,
     },
+    /// `split-window` command.
     SplitWindow {
         session_name: &'a str,
         window_index: usize,
         project_root: &'a Option<String>,
     },
+    /// `select-layout` command.
     SelectLayout {
         session_name: &'a str,
         window_index: usize,
         layout: &'a str,
     },
+    /// `select-window` command.
     SelectWindow {
         session_name: &'a str,
         window_index: usize,
     },
+    /// `select-pane` command
     SelectPane {
         session_name: &'a str,
         window_index: usize,
         pane_index: usize,
     },
-    AttachSession {
-        session_name: &'a str,
-    },
-    StopSession {
-        session_name: &'a str,
-    },
+    /// Attaches to a session using `attach-sesssion` or `switch-client`,
+    /// depends upon already running inside a tmux session or out of it.
+    AttachSession { session_name: &'a str },
+    /// `kill-session` command
+    StopSession { session_name: &'a str },
 }
 
 impl<'a> Commands<'a> {
@@ -212,6 +223,7 @@ impl<'a> Commands<'a> {
         write!(f, "{TMUX_BIN} kill-session -t {session_name}")
     }
 
+    /// Runs the command, based on the enum values.
     pub fn run(&self) -> Result<(), TmuxError> {
         match self {
             Commands::Server {

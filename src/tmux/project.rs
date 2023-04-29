@@ -1,3 +1,4 @@
+//! Maps rusmux's [`ProjectConfig`] to tmux commands and operations.
 use super::commands::Commands;
 use super::TmuxError;
 use crate::project_config::ProjectConfig;
@@ -8,9 +9,15 @@ use std::process::Command;
 pub const TMUX_BIN: &str = "tmux";
 const READ_ERROR: &str = "Cannot get tmux config options";
 
+/// Stores Tmux configuration information.
+///
+/// Since user configuration can alter settings, e.g the base index of a
+/// window (0, 1).
 #[derive(Debug)]
 struct Tmux {
+    /// Base index for a new window.
     base_index: usize,
+    /// Base index for a new pane.
     pane_base_index: usize,
 }
 
@@ -23,8 +30,8 @@ impl Tmux {
         }
     }
 
-    /// Create a new `Tmux` instance getting the values of `base-index` and `pane-base-index` from
-    /// the installed tmux config.
+    /// Create a new `Tmux` instance getting the values of `base-index` and `pane-base-index`
+    /// from the installed tmux configuration.
     fn new_from_config() -> Result<Self, TmuxError> {
         let output = Command::new(TMUX_BIN)
             .args([
@@ -56,6 +63,8 @@ impl Tmux {
     }
 }
 
+/// The tmux project, generates the required commands based on
+/// [ProjectConfig] and [Tmux] settings.
 #[derive(Debug)]
 pub struct TmuxProject<'a> {
     tmux: Tmux,
@@ -63,11 +72,39 @@ pub struct TmuxProject<'a> {
 }
 
 impl<'a> TmuxProject<'a> {
+    /// Creates a new Tmux project from a [`ProjectConfig`].
     pub fn new(project: &'a ProjectConfig) -> Result<Self, TmuxError> {
         let tmux = Tmux::new_from_config()?;
         Ok(TmuxProject { tmux, project })
     }
 
+    /// Gets the list of commands for the project, and runs them:
+    ///
+    /// - Commands to create the session if not running already.
+    /// - Commands to attach to an existing session.
+    pub fn run(&self) -> Result<(), TmuxError> {
+        let cmds = if self.session_exists()? {
+            vec![self.get_attach_session_command()]
+        } else {
+            self.get_commands()
+        };
+        for cmd in cmds {
+            cmd.run()?;
+        }
+        Ok(())
+    }
+
+    /// Stops the project's session, and run `on_project_stop`
+    /// (if specified).
+    pub fn stop(&self) -> Result<(), TmuxError> {
+        let cmds = self.get_stop_session_commands();
+        for cmd in cmds {
+            cmd.run()?;
+        }
+        Ok(())
+    }
+
+    /// Helper returning the [`Commands`] for creating the project's session.
     fn get_commands(&'a self) -> Vec<Commands> {
         let project_name = &self.project.project_name;
 
@@ -133,12 +170,16 @@ impl<'a> TmuxProject<'a> {
         commands
     }
 
+    /// Helper returning the [`Commands`] for attaching to an
+    /// already running session.
     fn get_attach_session_command(&self) -> Commands {
         Commands::AttachSession {
             session_name: &self.project.project_name,
         }
     }
 
+    /// Helper returning the [`Commands`] for stopping to an
+    /// already running session.
     fn get_stop_session_commands(&self) -> Vec<Commands> {
         vec![
             Commands::StopSession {
@@ -151,6 +192,12 @@ impl<'a> TmuxProject<'a> {
         ]
     }
 
+    /// Helper returning the commands for creating the [`Window`]s
+    /// and the panes of the session. Called from
+    /// [`get_commands`](`Self::get_commands`).
+    ///
+    /// The index of the window, `idx`, is `0` based, and is adjusted for
+    /// the current tmux configuration for `base-index` and `pane-base-index`.
     fn get_window_commands(&'a self, idx: usize, w: &'a Window) -> Vec<Commands> {
         let mut commands = Vec::new();
         let project_name = &self.project.project_name;
@@ -216,6 +263,8 @@ impl<'a> TmuxProject<'a> {
         commands
     }
 
+    /// Helper checking if the project's session is already running by
+    /// utilizing `tmux has-session`.
     fn session_exists(&self) -> Result<bool, TmuxError> {
         let res = Command::new(TMUX_BIN)
             .env_remove("TMUX")
@@ -225,26 +274,6 @@ impl<'a> TmuxProject<'a> {
             .output()?;
 
         Ok(res.status.success())
-    }
-
-    pub fn run(&self) -> Result<(), TmuxError> {
-        let cmds = if self.session_exists()? {
-            vec![self.get_attach_session_command()]
-        } else {
-            self.get_commands()
-        };
-        for cmd in cmds {
-            cmd.run()?;
-        }
-        Ok(())
-    }
-
-    pub fn stop(&self) -> Result<(), TmuxError> {
-        let cmds = self.get_stop_session_commands();
-        for cmd in cmds {
-            cmd.run()?;
-        }
-        Ok(())
     }
 }
 
