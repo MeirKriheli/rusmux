@@ -1,13 +1,14 @@
 //! Maps rusmux's [`ProjectConfig`] to tmux commands and operations.
 use super::commands::Commands;
 use super::TmuxError;
+use super::TmuxVersion;
 use crate::project_config::ProjectConfig;
 use crate::project_config::Window;
 use std::fmt;
 use std::process::Command;
 
 pub const TMUX_BIN: &str = "tmux";
-const READ_ERROR: &str = "Cannot get tmux config options";
+const READ_ERROR: &str = "Cannot get tmux version and config options";
 
 /// Stores Tmux configuration information.
 ///
@@ -19,14 +20,17 @@ struct Tmux {
     base_index: usize,
     /// Base index for a new pane.
     pane_base_index: usize,
+    /// Tmux version
+    version: TmuxVersion,
 }
 
 impl Tmux {
     /// Create a new `Tmux` instance with the proposed `base-index` and `pane-base-index`.
-    fn new(base_index: usize, pane_base_index: usize) -> Self {
+    fn new(base_index: usize, pane_base_index: usize, version: TmuxVersion) -> Self {
         Self {
             base_index,
             pane_base_index,
+            version,
         }
     }
 
@@ -44,22 +48,30 @@ impl Tmux {
                 "show",
                 "-g",
                 "pane-base-index",
+                ";",
+                "display-message",
+                "-p",
+                "#{version}",
             ])
             .output()
             .map_err(|_| TmuxError::Message(READ_ERROR.into()))?
             .stdout;
 
-        let values: Vec<usize> = String::from_utf8(output)
-            .map_err(|_| TmuxError::Message(READ_ERROR.into()))?
-            .lines()
+        let binding =
+            String::from_utf8(output).map_err(|_| TmuxError::Message(READ_ERROR.into()))?;
+        let lines: Vec<&str> = binding.lines().collect();
+
+        let values: Vec<usize> = lines
+            .iter()
+            .take(2)
             .map(|line| line.split(' ').nth(1).unwrap().parse::<usize>().unwrap())
             .collect();
 
-        if values.len() != 2 {
-            return Err(TmuxError::Message(READ_ERROR.into()));
+        match lines.len() {
+            2 => Ok(Self::new(values[0], values[1], None.into())),
+            3 => Ok(Self::new(values[0], values[1], Some(lines[2]).into())),
+            _ => Err(TmuxError::Message(READ_ERROR.into())),
         }
-
-        Ok(Self::new(values[0], values[1]))
     }
 }
 
