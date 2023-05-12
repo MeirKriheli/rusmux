@@ -5,7 +5,7 @@ use std::cmp::Ordering;
 /// Represents Tmux version.
 ///
 /// If for some reason `tmux -V` does not work, or can't parse the output
-/// Will return [Version::Max].
+/// Will return [TmuxVersion::Max].
 #[derive(Debug, PartialEq)]
 pub enum TmuxVersion {
     Max,
