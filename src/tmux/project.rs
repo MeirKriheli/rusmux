@@ -309,8 +309,8 @@ impl<'a> TmuxProject<'a> {
         }
 
         let mut hook_commands: Vec<String> = vec![
-            "set main-pane-height 66%".into(),
-            "set main-pane-width 66%".into(),
+            "set main-pane-height 60%".into(),
+            "set main-pane-width 60%".into(),
         ];
         windows.iter().enumerate().for_each(|(idx, w)| {
             // Need to select window before applying layout
