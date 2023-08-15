@@ -172,6 +172,14 @@ impl<'a> TmuxProject<'a> {
             })
         }
 
+        if self.tmux.version >= TmuxVersion::Version(2, 6) {
+            let hook_cmd = self.get_layout_hooks_command();
+
+            if let Some(cmd) = hook_cmd {
+                commands.push(cmd);
+            }
+        }
+
         commands.push(self.get_attach_session_command());
 
         commands.push(Commands::ProjectEvent {
@@ -286,6 +294,46 @@ impl<'a> TmuxProject<'a> {
             .output()?;
 
         Ok(res.status.success())
+    }
+
+    /// Get to hook commands to correctly apply layouts
+    fn get_layout_hooks_command(&self) -> Option<Commands> {
+        // No windows? No need to set layouts
+        if self.project.windows.as_ref().is_none() {
+            return None;
+        }
+
+        let windows = self.project.windows.as_ref().unwrap();
+        if windows.len() == 0 {
+            return None;
+        }
+
+        let mut hook_commands: Vec<String> = vec![
+            "set main-pane-height 66%".into(),
+            "set main-pane-width 66%".into(),
+        ];
+        windows.iter().enumerate().for_each(|(idx, w)| {
+            // Need to select window before applying layout
+            hook_commands.push(format!("selectw -t {}", self.tmux.base_index + idx));
+            hook_commands.push(format!("selectl {}", w.layout));
+            if idx > 0 {
+                hook_commands.push("selectw -l".into());
+            }
+        });
+
+        // Once done, unset the hook
+        hook_commands.push(format!(
+            "set-hook -u -t {} client-session-changed",
+            self.project.project_name
+        ));
+
+        let hook_command = hook_commands.join(";");
+
+        Some(Commands::SetHook {
+            session_name: &self.project.project_name,
+            hook_name: "client-session-changed",
+            hook_command,
+        })
     }
 }
 

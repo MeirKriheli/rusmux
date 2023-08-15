@@ -74,6 +74,12 @@ pub(crate) enum Commands<'a> {
     AttachSession { session_name: &'a str },
     /// `kill-session` command
     StopSession { session_name: &'a str },
+    /// Set a hook for tmux events
+    SetHook {
+        session_name: &'a str,
+        hook_name: &'a str,
+        hook_command: String,
+    },
 }
 
 impl<'a> Commands<'a> {
@@ -223,6 +229,18 @@ impl<'a> Commands<'a> {
         write!(f, "{TMUX_BIN} kill-session -t {session_name}")
     }
 
+    fn fmt_set_hook(
+        f: &mut fmt::Formatter,
+        session_name: &str,
+        hook_name: &str,
+        hook_command: &str,
+    ) -> Result<(), fmt::Error> {
+        write!(
+            f,
+            "{TMUX_BIN} set-hook -t {session_name} {hook_name} \"{hook_command}\""
+        )
+    }
+
     /// Runs the command, based on the enum values.
     pub fn run(&self) -> Result<(), TmuxError> {
         match self {
@@ -272,6 +290,11 @@ impl<'a> Commands<'a> {
             } => Commands::run_select_pane(session_name, *window_index, *pane_index),
             Commands::AttachSession { session_name } => Commands::run_attach_session(session_name),
             Commands::StopSession { session_name } => Commands::run_stop_session(session_name),
+            Commands::SetHook {
+                session_name,
+                hook_name,
+                hook_command,
+            } => Commands::run_set_hook(session_name, hook_name, hook_command),
         }
     }
 
@@ -470,6 +493,22 @@ impl<'a> Commands<'a> {
             )))
         }
     }
+
+    fn run_set_hook(
+        session_name: &str,
+        hook_name: &str,
+        hook_command: &str,
+    ) -> Result<(), TmuxError> {
+        let args = ["set-hook", "-t", session_name, hook_name, hook_command];
+        let res = Command::new(TMUX_BIN).args(args).status()?;
+        if res.success() {
+            Ok(())
+        } else {
+            Err(TmuxError::Message(format!(
+                "Cannot set {hook_name} hook for session {session_name}"
+            )))
+        }
+    }
 }
 
 impl<'a> fmt::Display for Commands<'a> {
@@ -532,6 +571,11 @@ impl<'a> fmt::Display for Commands<'a> {
                 Commands::fmt_attach_session(f, session_name)
             }
             Commands::StopSession { session_name } => Commands::fmt_stop_session(f, session_name),
+            Commands::SetHook {
+                session_name,
+                hook_name,
+                hook_command,
+            } => Commands::fmt_set_hook(f, session_name, hook_name, hook_command),
         }
     }
 }
