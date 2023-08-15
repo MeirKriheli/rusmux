@@ -12,7 +12,7 @@ keywords = ["tmux", "tmuxinator"]
 readme = "README.md"
 
 [dependencies]
-clap = { version = "~4.2", features = ["cargo"] }
+clap = { version = "~4.3", features = ["cargo"] }
 dialoguer = "0.10.4"
 directories = "5.0.0"
 glob = "~0.3"
