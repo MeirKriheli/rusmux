@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.8] - 2023-08-15
+
+### Bug Fixes
+
+- Added hooks to set layout Resolves #6
+
+### Documentation
+
+- Documented the `project_config` module
+- Documented top level `error` module.
+- Documented the `tmux` module
+- Documented the `app` module
+- Added rationale to README
+
+### Miscellaneous Tasks
+
+- Updated clap
+- Bumped cargo-dist to 0.0.7
+
 ## [0.3.7] - 2023-04-23
 
 ### Bug Fixes
@@ -18,6 +37,7 @@ All notable changes to this project will be documented in this file.
 - Updated cargo-dist, added Apple silicon target
 - Updated dependencies
 - Added git-cliff as pre-release hook
+- Release rusmux version 0.3.7
 
 ## [0.3.6] - 2023-03-28
 
