@@ -393,7 +393,7 @@ checksum = "a5996294f19bd3aae0453a862ad728f60e6600695733dd5df01da90c54363a3c"
 
 [[package]]
 name = "rusmux"
-version = "0.3.8"
+version = "0.3.9"
 dependencies = [
  "clap",
  "dialoguer",

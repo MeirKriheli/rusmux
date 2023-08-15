@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
 - Updated clap
 - Bumped cargo-dist to 0.0.7
 - Release rusmux version 0.3.8
+- Release rusmux version 0.3.8
 
 ## [0.3.7] - 2023-04-23
 
