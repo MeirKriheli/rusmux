@@ -53,8 +53,8 @@ pub struct Window {
     /// The tmux layout of the window. Defaults to `tiled`.
     #[serde(default = "tiled")]
     pub layout: String,
-    /// The window's panes, each with an optional command to run.
-    pub panes: Vec<Option<String>>,
+    /// The window's panes, each with an optional command(s) to run.
+    pub panes: Vec<Option<Vec<String>>>,
 }
 
 impl TryFrom<String> for Window {
@@ -98,7 +98,7 @@ impl<'de> Visitor<'de> for WindowVisitor {
 
         match val {
             Value::Null => w.panes.push(None),
-            Value::String(value) => w.panes.push(Some(value)),
+            Value::String(value) => w.panes.push(Some(vec![value])),
             Value::Mapping(map) => {
                 w.layout = map
                     .get(&Value::String("layout".into()))
@@ -107,10 +107,30 @@ impl<'de> Visitor<'de> for WindowVisitor {
 
                 if let Some(Value::Sequence(panes)) = map.get(&Value::String("panes".into())) {
                     for pane in panes {
-                        if pane.is_string() {
-                            w.panes.push(pane.as_str().map(|v| v.into()))
-                        } else {
-                            w.panes.push(None)
+                        match pane {
+                            Value::String(pane_cmd) => {
+                                w.panes.push(Some(vec![pane_cmd.into()]))
+                            }
+                            Value::Mapping(multicommand_pane) => {
+                                for pane_commands in multicommand_pane.values() {
+                                    match pane_commands {
+                                        Value::String(pane_cmd) => {
+                                            w.panes.push(Some(vec![pane_cmd.into()]))
+                                        }
+                                        Value::Sequence(pane_cmds) => {
+                                            w.panes.push(Some(
+                                                pane_cmds
+                                                    .iter()
+                                                    .filter_map(|cmd| cmd.as_str())
+                                                    .map(|cmd| cmd.into())
+                                                    .collect()
+                                            ))
+                                        }
+                                        _ => w.panes.push(None),
+                                    }
+                                }
+                            }
+                            _ => w.panes.push(None),
                         }
                     }
                 }
@@ -145,20 +165,76 @@ mod tests {
 
         assert_eq!(windows[1].name, "test2 window");
         assert_eq!(windows[1].layout, "tiled".to_string());
-        assert_eq!(windows[1].panes, vec![Some("vim".into())]);
+        assert_eq!(windows[1].panes, vec![Some(vec!["vim".into()])]);
 
         assert_eq!(windows[2].name, "window3");
         assert_eq!(windows[2].layout, "tiled".to_string());
         assert_eq!(
             windows[2].panes,
-            vec![Some("vim".into()), None, Some("npm run serve".into())]
+            vec![Some(vec!["vim".into()]), None, Some(vec!["npm run serve".into()])]
         );
 
         assert_eq!(windows[3].name, "window4");
         assert_eq!(windows[3].layout, "main-vertical".to_string());
         assert_eq!(
             windows[3].panes,
-            vec![Some("vim".into()), None, Some("npm run serve".into())]
+            vec![Some(vec!["vim".into()]), None, Some(vec!["npm run serve".into()])]
         );
+    }
+
+    #[test]
+    fn multicommand_panes() {
+        let yaml = "\
+greek-window:
+  panes:
+    - alpha-pane:
+      - echo alpha1
+      - echo alpha2
+    - beta-pane:
+      - echo beta
+    - gamma-pane: echo gamma
+    - echo delta # a good old single command pane";
+        let window = Window::try_from(yaml.to_string()).unwrap();
+        assert_eq!(window.name, "greek-window");
+        assert_eq!(window.panes, vec![
+            Some(vec!["echo alpha1".into(), "echo alpha2".into()]),
+            Some(vec!["echo beta".into()]),
+            Some(vec!["echo gamma".into()]),
+            Some(vec!["echo delta".into()]),
+        ]);
+    }
+
+    #[test]
+    fn invalid_multicommand_pane() {
+        let yaml = "\
+aircraft-window:
+  panes:
+    - bad-plane:
+        aero-bullet: echo 'object is not a valid command, also the worst airplane in history'
+    - ok-plane: echo 'Boeing 747'";
+        let window = Window::try_from(yaml.to_string()).unwrap();
+        assert_eq!(window.name, "aircraft-window");
+        assert_eq!(window.panes, vec![
+            None,
+            Some(vec!["echo 'Boeing 747'".into()]),
+        ]);
+    }
+
+    #[test]
+    fn invalid_multicommand_pane_item() {
+        let yaml = "\
+roman-window:
+  panes:
+    - roman-pane:
+      # comments are fine
+      - echo I
+      - # empty command is ignored
+      - echo II
+      - bad-command: is ignored!";
+        let window = Window::try_from(yaml.to_string()).unwrap();
+        assert_eq!(window.name, "roman-window");
+        assert_eq!(window.panes, vec![
+            Some(vec!["echo I".into(), "echo II".into()])
+        ]);
     }
 }
