@@ -4,7 +4,7 @@ use serde::Deserialize;
 use serde_yaml::Value;
 use std::fs::{create_dir_all, File};
 use std::io::prelude::*;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::error::AppError;
 
@@ -34,13 +34,28 @@ pub fn get_project_yaml(project_name: &str) -> Result<Value, AppError> {
     filename.push_str(".yml");
 
     let project_file_path = get_path(&filename)?;
+    get_file_project_yaml(&project_file_path)
+}
+
+/// Read project file from path and parse it to [`serde_yaml::Value`].
+pub fn get_file_project_yaml(file_path: impl Into<PathBuf> + Clone) -> Result<Value, AppError> {
+    let file_path: PathBuf = file_path.into();
     let mut contents = String::new();
-    File::open(&project_file_path)
-        .map_err(|_| AppError::ProjectFileNotFound(project_file_path.clone()))?
+    File::open(&file_path)
+        .map_err(|_| AppError::ProjectFileNotFound(file_path.clone()))?
         .read_to_string(&mut contents)
-        .map_err(|e| AppError::ProjectFileRead(project_file_path.clone(), e))?;
+        .map_err(|e| AppError::ProjectFileRead(file_path.clone(), e))?;
 
     let de = serde_yaml::Deserializer::from_str(&contents);
-    Value::deserialize(de)
-        .map_err(|e| AppError::YamlParse(project_file_path.clone(), format!("{e}")))
+    Value::deserialize(de).map_err(|e| AppError::YamlParse(file_path.clone(), format!("{e}")))
+}
+
+pub fn get_entries(file_or_project: &str, is_path: bool) -> Result<Value, AppError> {
+    let project_name = file_or_project;
+    if is_path {
+        let file_path = Path::new(project_name);
+        get_file_project_yaml(file_path)
+    } else {
+        get_project_yaml(project_name)
+    }
 }

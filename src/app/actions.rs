@@ -47,8 +47,8 @@ pub(crate) fn list_projects() -> Result<(), AppError> {
 }
 
 /// Parses the project file and prints the shell commands for session creation.
-pub(crate) fn debug_project(project_name: &str) -> Result<(), AppError> {
-    let entries = config::get_project_yaml(project_name)?;
+pub(crate) fn debug_project(project_name: &str, is_path: bool) -> Result<(), AppError> {
+    let entries = config::get_entries(project_name, is_path)?;
     let project = ProjectConfig::try_from(entries)?;
     let tmux = TmuxProject::new(&project)?;
     println!("{tmux}");
@@ -56,10 +56,10 @@ pub(crate) fn debug_project(project_name: &str) -> Result<(), AppError> {
 }
 
 /// Parses the project file, runs the commands to create the tmux session.
-pub fn run_project(project_name: &str) -> Result<(), AppError> {
+pub fn run_project(project_name: &str, is_path: bool) -> Result<(), AppError> {
+    let entries = config::get_entries(project_name, is_path)?;
     println!("Starting project {project_name}");
 
-    let entries = config::get_project_yaml(project_name)?;
     let project = ProjectConfig::try_from(entries)?;
     let tmux = TmuxProject::new(&project)?;
     Ok(tmux.run()?)
@@ -197,7 +197,8 @@ pub(crate) fn copy_project(existing: &str, new: &str) -> Result<(), AppError> {
 }
 
 /// Kills the project's session.
-pub(crate) fn stop(project_name: &str) -> Result<(), AppError> {
+pub(crate) fn stop(project_name: &str, is_path: bool) -> Result<(), AppError> {
+    let entries = config::get_entries(project_name, is_path)?;
     let entries = config::get_project_yaml(project_name)?;
     let project = ProjectConfig::try_from(entries)?;
     let tmux = TmuxProject::new(&project)?;
