@@ -26,7 +26,7 @@ cat ~/.config/rusmux/demo.yml
 ```
 
 ```yaml
-project_name: demo
+project_name: demo  # can also use name
 project_root: ~/src/demo
 on_project_start:
   - sudo systemctl start postgresql

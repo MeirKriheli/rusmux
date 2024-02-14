@@ -35,6 +35,7 @@ use std::convert::TryFrom;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProjectConfig {
     /// Required project name
+    #[serde(alias = "name")]
     pub project_name: String,
     /// The root directory for the project (optional).
     /// Will be shell expanded and `cd` into before starting the session.
@@ -92,6 +93,16 @@ mod tests {
     fn empty_project_test() {
         let name = "empty";
         let yaml = format!("project_name: {name}");
+
+        let project = ProjectConfig::try_from(yaml).unwrap();
+        assert_eq!(project.project_name, name);
+        assert_eq!(project.windows, None);
+    }
+
+    #[test]
+    fn empty_project_with_name_instead_of_project_name_test() {
+        let name = "empty";
+        let yaml = format!("name: {name}");
 
         let project = ProjectConfig::try_from(yaml).unwrap();
         assert_eq!(project.project_name, name);
