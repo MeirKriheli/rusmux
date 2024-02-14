@@ -256,14 +256,16 @@ impl<'a> TmuxProject<'a> {
                     });
                 })
             }
-            if let Some(pane_cmd) = pane {
-                commands.push(Commands::SendKeys {
-                    command: pane_cmd.clone(),
-                    session_name: project_name,
-                    window_index: window_idx,
-                    pane_index: Some(pane_with_base_idx),
-                    comment: None,
-                });
+            if let Some(pane_commands) = pane {
+                for pan_cmd in pane_commands.iter() {
+                    commands.push(Commands::SendKeys {
+                        command: pan_cmd.clone(),
+                        session_name: project_name,
+                        window_index: window_idx,
+                        pane_index: Some(pane_with_base_idx),
+                        comment: None,
+                    });
+                }
             }
         });
 

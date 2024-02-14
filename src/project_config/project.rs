@@ -126,6 +126,6 @@ windows:
         assert_eq!(windows.len(), 1);
         let first = windows.get(0).unwrap();
         assert_eq!(first.name, window_name);
-        assert_eq!(first.panes, vec![Some(window_command)]);
+        assert_eq!(first.panes, vec![Some(vec![window_command])]);
     }
 }
