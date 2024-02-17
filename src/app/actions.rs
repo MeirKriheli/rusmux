@@ -115,17 +115,27 @@ pub(crate) fn edit_project(project_name: &str) -> Result<(), AppError> {
     Ok(())
 }
 
+/// Create the new project file from a blank template (only containing) name, or a
+/// pre-defined template.
+pub enum NewProjectFrom<'a> {
+    DefaultTemplate { name: &'a str },
+    Blank { name: &'a str },
+}
+
 /// Creates a new project file, optinally from [`default_template`], and
 /// opens it with `$EDITOR`.
-pub(crate) fn new_project(project_name: &str, blank: bool) -> Result<(), AppError> {
+pub(crate) fn new_project(project_from: &NewProjectFrom) -> Result<(), AppError> {
+    let project_name = match project_from {
+        NewProjectFrom::Blank { name } => name,
+        NewProjectFrom::DefaultTemplate { name } => name,
+    };
     let project_file_path = config::get_project_path(project_name)?;
     if project_file_path.exists() {
         return Err(AppError::ProjectFileExists(project_file_path));
     }
-    let content = if blank {
-        format!("project_name: {project_name}")
-    } else {
-        format!(default_template!(), project_name)
+    let content = match project_from {
+        NewProjectFrom::Blank { name } => format!("project_name: {name}"),
+        NewProjectFrom::DefaultTemplate { name } => format!(default_template!(), name),
     };
 
     let mut new_file = File::create(&project_file_path)

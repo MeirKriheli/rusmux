@@ -7,7 +7,10 @@ mod error;
 mod project_config;
 mod tmux;
 
-use app::{actions, cli};
+use app::{
+    actions::{self, NewProjectFrom},
+    cli,
+};
 use error::AppErrorForDisplay;
 
 fn main() -> Result<(), AppErrorForDisplay> {
@@ -32,10 +35,15 @@ fn main() -> Result<(), AppErrorForDisplay> {
         Some(("delete", delete_matches)) => {
             actions::delete_project(delete_matches.get_one::<String>("project").unwrap())
         }
-        Some(("new", new_matches)) => actions::new_project(
-            new_matches.get_one::<String>("project").unwrap(),
-            *new_matches.get_one::<bool>("blank").unwrap(),
-        ),
+        Some(("new", new_matches)) => {
+            let name = new_matches.get_one::<String>("project").unwrap();
+            let is_blank = *new_matches.get_one::<bool>("blank").unwrap();
+            let new_project = match is_blank {
+                true => NewProjectFrom::Blank { name },
+                false => NewProjectFrom::DefaultTemplate { name },
+            };
+            actions::new_project(&new_project)
+        }
         Some(("copy", copy_matches)) => actions::copy_project(
             copy_matches.get_one::<String>("existing").unwrap(),
             copy_matches.get_one::<String>("new").unwrap(),
