@@ -42,7 +42,12 @@ windows:
       panes:
         - #
         - grunt serve
+        - remote-log: # name is meaningless, for multi commands
+          - ssh me@example.com
+          - cd /var/logs
+          - tail -f project.log 
   - mail: python -m smtpd -n -c DebuggingServer localhost:1025
+
 ```
 
 ## Install
