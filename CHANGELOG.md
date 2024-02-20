@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.11] - 2024-02-20
+
+### Miscellaneous Tasks
+
+- Updated rust-toolchain-version
+
 ## [0.3.10] - 2024-02-20
 
 ### Bug Fixes
@@ -22,6 +28,7 @@ All notable changes to this project will be documented in this file.
 - Added AUTHORS
 - Updated Cargo.lock
 - Updated CHANGELOG
+- Release rusmux version 0.3.10
 
 ### Refactor
 
