@@ -2,11 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.12] - 2024-02-20
+
+### Miscellaneous Tasks
+
+- Removed toolchain pinning
+
 ## [0.3.11] - 2024-02-20
 
 ### Miscellaneous Tasks
 
 - Updated rust-toolchain-version
+- Release rusmux version 0.3.11
 
 ## [0.3.10] - 2024-02-20
 
