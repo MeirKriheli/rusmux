@@ -2,11 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.10] - 2024-02-20
+
+### Bug Fixes
+
+- Allow name instead of project_name Resolves #11
+
+### Documentation
+
+- Added an example for pane multi-commands
+
+### Features
+
+- Multicommand panes
+
+### Miscellaneous Tasks
+
+- Update cargo-dist
+- Added AUTHORS
+- Updated Cargo.lock
+- Updated CHANGELOG
+
+### Refactor
+
+- Changed new project bool to an enum
+
 ## [0.3.9] - 2023-08-15
 
 ### Bug Fixes
 
 - Set default pane width/height to 60%
+
+### Miscellaneous Tasks
+
+- Release rusmux version 0.3.9
 
 ## [0.3.8] - 2023-08-15
 
