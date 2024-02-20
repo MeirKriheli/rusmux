@@ -2,11 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2024-02-20
+
+### Miscellaneous Tasks
+
+- Removed homebrew
+
 ## [0.3.12] - 2024-02-20
 
 ### Miscellaneous Tasks
 
 - Removed toolchain pinning
+- Release rusmux version 0.3.12
 
 ## [0.3.11] - 2024-02-20
 
