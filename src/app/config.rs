@@ -30,10 +30,7 @@ pub fn get_project_path(project_name: &str) -> Result<PathBuf, AppError> {
 
 /// Read project file, parse it to [`serde_yaml::Value`].
 pub fn get_project_yaml(project_name: &str) -> Result<Value, AppError> {
-    let mut filename = project_name.to_owned();
-    filename.push_str(".yml");
-
-    let project_file_path = get_path(&filename)?;
+    let project_file_path = get_project_path(project_name)?;
     let mut contents = String::new();
     File::open(&project_file_path)
         .map_err(|_| AppError::ProjectFileNotFound(project_file_path.clone()))?
