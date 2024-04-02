@@ -301,12 +301,10 @@ impl<'a> TmuxProject<'a> {
     /// Get to hook commands to correctly apply layouts
     fn get_layout_hooks_command(&self) -> Option<Commands> {
         // No windows? No need to set layouts
-        if self.project.windows.as_ref().is_none() {
-            return None;
-        }
+        self.project.windows.as_ref()?;
 
         let windows = self.project.windows.as_ref().unwrap();
-        if windows.len() == 0 {
+        if windows.is_empty() {
             return None;
         }
 

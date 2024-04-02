@@ -108,24 +108,20 @@ impl<'de> Visitor<'de> for WindowVisitor {
                 if let Some(Value::Sequence(panes)) = map.get(&Value::String("panes".into())) {
                     for pane in panes {
                         match pane {
-                            Value::String(pane_cmd) => {
-                                w.panes.push(Some(vec![pane_cmd.into()]))
-                            }
+                            Value::String(pane_cmd) => w.panes.push(Some(vec![pane_cmd.into()])),
                             Value::Mapping(multicommand_pane) => {
                                 for pane_commands in multicommand_pane.values() {
                                     match pane_commands {
                                         Value::String(pane_cmd) => {
                                             w.panes.push(Some(vec![pane_cmd.into()]))
                                         }
-                                        Value::Sequence(pane_cmds) => {
-                                            w.panes.push(Some(
-                                                pane_cmds
-                                                    .iter()
-                                                    .filter_map(|cmd| cmd.as_str())
-                                                    .map(|cmd| cmd.into())
-                                                    .collect()
-                                            ))
-                                        }
+                                        Value::Sequence(pane_cmds) => w.panes.push(Some(
+                                            pane_cmds
+                                                .iter()
+                                                .filter_map(|cmd| cmd.as_str())
+                                                .map(|cmd| cmd.into())
+                                                .collect(),
+                                        )),
                                         _ => w.panes.push(None),
                                     }
                                 }
@@ -135,7 +131,7 @@ impl<'de> Visitor<'de> for WindowVisitor {
                     }
                 }
             }
-            _ => return Err("invalid window struct").map_err(de::Error::custom),
+            _ => return Err(de::Error::custom("invalid window struct")),
         }
         Ok(w)
     }
@@ -147,7 +143,7 @@ mod tests {
 
     #[test]
     fn windows_test() {
-        let windows_strings = vec![
+        let windows_strings = [
             "test: #",
             "test2 window: vim",
             "window3:\n  panes:\n    - vim\n    - #\n    - npm run serve",
@@ -171,14 +167,22 @@ mod tests {
         assert_eq!(windows[2].layout, "tiled".to_string());
         assert_eq!(
             windows[2].panes,
-            vec![Some(vec!["vim".into()]), None, Some(vec!["npm run serve".into()])]
+            vec![
+                Some(vec!["vim".into()]),
+                None,
+                Some(vec!["npm run serve".into()])
+            ]
         );
 
         assert_eq!(windows[3].name, "window4");
         assert_eq!(windows[3].layout, "main-vertical".to_string());
         assert_eq!(
             windows[3].panes,
-            vec![Some(vec!["vim".into()]), None, Some(vec!["npm run serve".into()])]
+            vec![
+                Some(vec!["vim".into()]),
+                None,
+                Some(vec!["npm run serve".into()])
+            ]
         );
     }
 
@@ -196,12 +200,15 @@ greek-window:
     - echo delta # a good old single command pane";
         let window = Window::try_from(yaml.to_string()).unwrap();
         assert_eq!(window.name, "greek-window");
-        assert_eq!(window.panes, vec![
-            Some(vec!["echo alpha1".into(), "echo alpha2".into()]),
-            Some(vec!["echo beta".into()]),
-            Some(vec!["echo gamma".into()]),
-            Some(vec!["echo delta".into()]),
-        ]);
+        assert_eq!(
+            window.panes,
+            vec![
+                Some(vec!["echo alpha1".into(), "echo alpha2".into()]),
+                Some(vec!["echo beta".into()]),
+                Some(vec!["echo gamma".into()]),
+                Some(vec!["echo delta".into()]),
+            ]
+        );
     }
 
     #[test]
@@ -214,10 +221,10 @@ aircraft-window:
     - ok-plane: echo 'Boeing 747'";
         let window = Window::try_from(yaml.to_string()).unwrap();
         assert_eq!(window.name, "aircraft-window");
-        assert_eq!(window.panes, vec![
-            None,
-            Some(vec!["echo 'Boeing 747'".into()]),
-        ]);
+        assert_eq!(
+            window.panes,
+            vec![None, Some(vec!["echo 'Boeing 747'".into()]),]
+        );
     }
 
     #[test]
@@ -233,8 +240,9 @@ roman-window:
       - bad-command: is ignored!";
         let window = Window::try_from(yaml.to_string()).unwrap();
         assert_eq!(window.name, "roman-window");
-        assert_eq!(window.panes, vec![
-            Some(vec!["echo I".into(), "echo II".into()])
-        ]);
+        assert_eq!(
+            window.panes,
+            vec![Some(vec!["echo I".into(), "echo II".into()])]
+        );
     }
 }

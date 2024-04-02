@@ -53,7 +53,7 @@ impl PartialOrd for TmuxVersion {
                 if x1 == y1 {
                     return x2.partial_cmp(y2);
                 }
-                return x1.partial_cmp(y1);
+                x1.partial_cmp(y1)
             }
         }
     }
