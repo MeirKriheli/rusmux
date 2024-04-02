@@ -2,11 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2024-04-02
+
+### Features
+
+- Added support for project files from filesystem path
+
+### Miscellaneous Tasks
+
+- Some clippy and formatting cleanups
+- Updated cargo-dist
+
 ## [0.4.0] - 2024-02-20
 
 ### Miscellaneous Tasks
 
 - Removed homebrew
+- Release rusmux version 0.4.0
 
 ## [0.3.12] - 2024-02-20
 
