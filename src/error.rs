@@ -13,7 +13,7 @@ pub enum AppError {
     /// Problem getting the configuration directory.
     #[error("Can not get config path in the user's home directory")]
     ConfigPath,
-    /// Could show the confirmation prompt.
+    /// Could not show the confirmation prompt.
     #[error("Can not run prompt: {0}")]
     Prompt(io::Error),
     /// Error during `yaml` parsing.
@@ -56,6 +56,12 @@ pub enum AppError {
     /// Error running a command
     #[error("Could not run command {0}")]
     CommandRun(String),
+    /// Error expanding a directory/file path.
+    #[error("Can not expand path")]
+    Expand(#[from] shellexpand::LookupError<std::env::VarError>),
+    /// Error getting project name from file path
+    #[error("Can not get project name from file path {0}")]
+    GetProjectNameFromFilePath(String),
 }
 
 /// Used for displaying the error on exit.

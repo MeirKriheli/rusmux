@@ -114,3 +114,9 @@ windows:
         rusmux doctor
 
   Checks for `tmux` in `$PATH` and `$SHELL` & `$EDITOR` are set.
+
+
+> **NOTE** In the commands above, `project`, `existing` and `new` can be:
+>
+> * A simple name, like `my_project`, `awesome_server`, which will be created with a `yaml` extension in the config directory.
+> * A path to a file (determined by an extension and/or path separator), e.g. `~/projects/my_project/session.yaml`.

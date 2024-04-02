@@ -129,13 +129,22 @@ pub(crate) fn new_project(project_from: &NewProjectFrom) -> Result<(), AppError>
         NewProjectFrom::Blank { name } => name,
         NewProjectFrom::DefaultTemplate { name } => name,
     };
+
     let project_file_path = config::get_project_path(project_name)?;
     if project_file_path.exists() {
         return Err(AppError::ProjectFileExists(project_file_path));
     }
+
+    // project_name can be a path, so extract the base name from the path as project_name
+    let project_name = Path::new(project_name)
+        .file_stem()
+        .ok_or(AppError::GetProjectNameFromFilePath(
+            project_name.to_string(),
+        ))?
+        .to_string_lossy();
     let content = match project_from {
-        NewProjectFrom::Blank { name } => format!("project_name: {name}"),
-        NewProjectFrom::DefaultTemplate { name } => format!(default_template!(), name),
+        NewProjectFrom::Blank { name: _ } => format!("project_name: {project_name}"),
+        NewProjectFrom::DefaultTemplate { name: _ } => format!(default_template!(), project_name),
     };
 
     let mut new_file = File::create(&project_file_path)

@@ -4,7 +4,7 @@ use serde::Deserialize;
 use serde_yaml::Value;
 use std::fs::{create_dir_all, File};
 use std::io::prelude::*;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 
 use crate::error::AppError;
 
@@ -20,9 +20,18 @@ pub fn get_path(pattern: &str) -> Result<PathBuf, AppError> {
     Ok(path)
 }
 
-/// Returns the path of a project file, adding `.yml` extension it.
-pub fn get_project_path(project_name: &str) -> Result<PathBuf, AppError> {
-    let mut file_path = get_path(project_name)?;
+/// If the name contains an filename with an extension or path parameters, treats it's
+/// like a path to the file.
+///
+/// Otherwise returns the path of a project file under the config dir, adding `.yml` extension it.
+pub fn get_project_path(project_or_file_name: &str) -> Result<PathBuf, AppError> {
+    let has_extension = Path::new(project_or_file_name).extension().is_some();
+    let has_seperator = project_or_file_name.contains(MAIN_SEPARATOR);
+    if has_extension || has_seperator {
+        let file_path = shellexpand::full(project_or_file_name)?;
+        return Ok(PathBuf::from(file_path.as_ref()));
+    }
+    let mut file_path = get_path(project_or_file_name)?;
     file_path.set_extension("yml");
 
     Ok(file_path)
