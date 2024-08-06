@@ -101,11 +101,11 @@ impl<'de> Visitor<'de> for WindowVisitor {
             Value::String(value) => w.panes.push(Some(vec![value])),
             Value::Mapping(map) => {
                 w.layout = map
-                    .get(&Value::String("layout".into()))
+                    .get(Value::String("layout".into()))
                     .map(|v| v.as_str().unwrap().into())
                     .unwrap_or_else(|| "tiled".into());
 
-                if let Some(Value::Sequence(panes)) = map.get(&Value::String("panes".into())) {
+                if let Some(Value::Sequence(panes)) = map.get(Value::String("panes".into())) {
                     for pane in panes {
                         match pane {
                             Value::String(pane_cmd) => w.panes.push(Some(vec![pane_cmd.into()])),
