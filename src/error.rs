@@ -15,7 +15,7 @@ pub enum AppError {
     ConfigPath,
     /// Could not show the confirmation prompt.
     #[error("Can not run prompt: {0}")]
-    Prompt(io::Error),
+    Prompt(dialoguer::Error),
     /// Error during `yaml` parsing.
     #[error("Could not parse yaml from {0}: {1}")]
     YamlParse(PathBuf, String),
