@@ -267,6 +267,13 @@ impl<'a> TmuxProject<'a> {
                     });
                 }
             }
+
+            // apply layout again, to have panes correctly sized
+            commands.push(Commands::SelectLayout {
+                session_name: project_name,
+                window_index: window_idx,
+                layout: &w.layout,
+            });
         });
 
         if w.panes.len() > 1 {

@@ -421,7 +421,7 @@ impl<'a> Commands<'a> {
         layout: &str,
     ) -> Result<(), TmuxError> {
         let target_name = format!("{session_name}:{window_index}");
-        let args = vec!["select-layout", "-t", &target_name];
+        let args = vec!["select-layout", "-t", &target_name, layout];
         let res = Command::new(TMUX_BIN).args(args).status()?;
 
         if res.success() {
