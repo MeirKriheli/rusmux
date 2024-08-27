@@ -63,6 +63,13 @@ pub(crate) enum Commands<'a> {
         session_name: &'a str,
         window_index: usize,
     },
+    /// `select-window` command.
+    SetWindowOption {
+        session_name: &'a str,
+        window_index: usize,
+        option_name: &'a str,
+        value: &'a str,
+    },
     /// `select-pane` command
     SelectPane {
         session_name: &'a str,
@@ -241,6 +248,21 @@ impl<'a> Commands<'a> {
         )
     }
 
+    fn fmt_set_window_option(
+        f: &mut fmt::Formatter,
+        session_name: &str,
+        window_index: usize,
+        option_name: &str,
+        value: &str,
+    ) -> Result<(), fmt::Error> {
+        write!(
+            f,
+            "{TMUX_BIN} set-option -w -t {session_name}:{window_index} {} {}",
+            shell_escape::escape(option_name.into()),
+            shell_escape::escape(value.into())
+        )
+    }
+
     /// Runs the command, based on the enum values.
     pub fn run(&self) -> Result<(), TmuxError> {
         match self {
@@ -295,6 +317,12 @@ impl<'a> Commands<'a> {
                 hook_name,
                 hook_command,
             } => Commands::run_set_hook(session_name, hook_name, hook_command),
+            Commands::SetWindowOption {
+                session_name,
+                window_index,
+                option_name,
+                value,
+            } => Commands::run_set_window_option(session_name, *window_index, option_name, value),
         }
     }
 
@@ -509,6 +537,30 @@ impl<'a> Commands<'a> {
             )))
         }
     }
+
+    fn run_set_window_option(
+        session_name: &str,
+        window_index: usize,
+        option_name: &str,
+        value: &str,
+    ) -> Result<(), TmuxError> {
+        let args = [
+            "set-option",
+            "-w",
+            "-t",
+            &format!("{session_name}:{window_index}"),
+            option_name,
+            value,
+        ];
+        let res = Command::new(TMUX_BIN).args(args).status()?;
+        if res.success() {
+            Ok(())
+        } else {
+            Err(TmuxError::Message(format!(
+                "Cannot set window option {option_name} = {value } for {session_name}:{window_index}"
+            )))
+        }
+    }
 }
 
 impl<'a> fmt::Display for Commands<'a> {
@@ -576,6 +628,14 @@ impl<'a> fmt::Display for Commands<'a> {
                 hook_name,
                 hook_command,
             } => Commands::fmt_set_hook(f, session_name, hook_name, hook_command),
+            Commands::SetWindowOption {
+                session_name,
+                window_index,
+                option_name,
+                value,
+            } => {
+                Commands::fmt_set_window_option(f, session_name, *window_index, option_name, value)
+            }
         }
     }
 }

@@ -231,6 +231,18 @@ impl<'a> TmuxProject<'a> {
                 project_root: &self.project.project_root,
             });
         }
+
+        if let Some(options) = &w.options {
+            for (option_name, value) in options.iter() {
+                commands.push(Commands::SetWindowOption {
+                    session_name: project_name,
+                    window_index: window_idx,
+                    option_name,
+                    value,
+                });
+            }
+        }
+
         w.panes.iter().enumerate().for_each(|(pane_idx, pane)| {
             let pane_with_base_idx = pane_idx + self.tmux.pane_base_index;
             if pane_idx > 0 {
@@ -315,10 +327,7 @@ impl<'a> TmuxProject<'a> {
             return None;
         }
 
-        let mut hook_commands: Vec<String> = vec![
-            "set main-pane-height 60%".into(),
-            "set main-pane-width 60%".into(),
-        ];
+        let mut hook_commands: Vec<String> = Vec::new();
         windows.iter().enumerate().for_each(|(idx, w)| {
             // Need to select window before applying layout
             hook_commands.push(format!("selectw -t {}", self.tmux.base_index + idx));

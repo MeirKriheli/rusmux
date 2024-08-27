@@ -39,6 +39,8 @@ windows:
   - editor: vim
   - shells:
       layout: main-vertical
+      options:  # per window options
+        main-pane-width: 60%
       panes:
         - #
         - grunt serve

@@ -4,6 +4,7 @@ use super::error::ProjectParseError;
 use serde::de::{self, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_yaml::{self, Value};
+use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::fmt;
 
@@ -39,6 +40,8 @@ use std::fmt;
 ///
 /// window4:
 ///   layout: main-vertical
+///   options:
+///     main-pane-width: 60%
 ///   panes:
 ///     - vim
 ///     - #
@@ -55,6 +58,8 @@ pub struct Window {
     pub layout: String,
     /// The window's panes, each with an optional command(s) to run.
     pub panes: Vec<Option<Vec<String>>>,
+    /// Per window options
+    pub options: Option<HashMap<String, String>>,
 }
 
 impl TryFrom<String> for Window {
@@ -94,6 +99,7 @@ impl<'de> Visitor<'de> for WindowVisitor {
             name: key,
             layout: "tiled".into(),
             panes: vec![],
+            options: None,
         };
 
         match val {
@@ -104,6 +110,19 @@ impl<'de> Visitor<'de> for WindowVisitor {
                     .get(Value::String("layout".into()))
                     .map(|v| v.as_str().unwrap().into())
                     .unwrap_or_else(|| "tiled".into());
+
+                w.options = map.get(Value::String("options".into())).map(|v| {
+                    v.as_mapping()
+                        .unwrap()
+                        .iter()
+                        .map(|(option, value)| {
+                            (
+                                option.as_str().unwrap().into(),
+                                value.as_str().unwrap().into(),
+                            )
+                        })
+                        .collect()
+                });
 
                 if let Some(Value::Sequence(panes)) = map.get(Value::String("panes".into())) {
                     for pane in panes {
@@ -244,5 +263,22 @@ roman-window:
             window.panes,
             vec![Some(vec!["echo I".into(), "echo II".into()])]
         );
+    }
+
+    #[test]
+    fn window_options() {
+        let yaml = "\
+window-with-options:
+    options:
+        main-pane-height: 70%
+        main-pane-width: 75%";
+
+        let window = Window::try_from(yaml.to_string()).unwrap();
+        assert!(window.options.is_some());
+
+        let options = window.options.unwrap();
+        assert_eq!(options.len(), 2);
+        assert_eq!(options.get("main-pane-height"), Some(&"70%".to_string()));
+        assert_eq!(options.get("main-pane-width"), Some(&"75%".to_string()));
     }
 }
