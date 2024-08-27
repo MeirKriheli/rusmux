@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] - 2024-08-27
+
+### Bug Fixes
+
+- Apply layout after each split, closes #10
+
+### Features
+
+- Added start and kill aliases (for run and stop)
+- Added per-window options (set -w ....)
+
+### Miscellaneous Tasks
+
+- Updated dependencies
+- Cleaned some clippy warnings
+- Updated cargo-dist
+
 ## [0.5.0] - 2024-04-02
 
 ### Features
@@ -12,6 +29,7 @@ All notable changes to this project will be documented in this file.
 
 - Some clippy and formatting cleanups
 - Updated cargo-dist
+- Release rusmux version 0.5.0
 
 ## [0.4.0] - 2024-02-20
 
