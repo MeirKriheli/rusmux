@@ -34,9 +34,9 @@ lto = "thin"
 # Config for 'cargo dist'
 [workspace.metadata.dist]
 # The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.12.0"
+cargo-dist-version = "0.21.1"
 # CI backends to support
-ci = ["github"]
+ci = "github"
 # Target platforms to build apps for (Rust target-triple syntax)
 targets = [
   "aarch64-apple-darwin",
@@ -47,10 +47,12 @@ targets = [
 installers = ["shell"]
 # Publish jobs to run in CI
 publish-jobs = ["homebrew"]
-# Publish jobs to run in CI
+# Which actions to run on pull requests
 pr-run-mode = "plan"
 # Whether to install an updater program
 install-updater = false
+# Path that installers should place binaries in
+install-path = "CARGO_HOME"
 
 [package.metadata.release]
 pre-release-hook = ["git-cliff", "-o", "CHANGELOG.md", "--tag", "{{version}}"]
