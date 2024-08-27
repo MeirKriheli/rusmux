@@ -22,11 +22,14 @@ pub(crate) fn get_cli_command_parser() -> Command {
                 ),
         )
         .subcommand(
-            Command::new("run").about("Run the project commands").arg(
-                Arg::new("project")
-                    .help("Project name or filesystem path")
-                    .required(true),
-            ),
+            Command::new("run")
+                .alias("start")
+                .about("Run the project commands")
+                .arg(
+                    Arg::new("project")
+                        .help("Project name or filesystem path")
+                        .required(true),
+                ),
         )
         .subcommand(
             Command::new("copy")
@@ -75,6 +78,7 @@ pub(crate) fn get_cli_command_parser() -> Command {
         )
         .subcommand(
             Command::new("stop")
+                .alias("kill")
                 .about("Stop the project's session")
                 .arg(
                     Arg::new("project")

@@ -75,6 +75,7 @@ windows:
   or 
 
         rusmux run [project]
+        rusmux start [project]
 
 * List all existing projects
 
@@ -91,6 +92,7 @@ windows:
 * Stop project's session
 
         rusmux stop [project]
+        rusmux kill [project]
 
 * Delete an existing project (after confirmation)
 
