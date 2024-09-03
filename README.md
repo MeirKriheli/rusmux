@@ -61,6 +61,11 @@ windows:
 
         cargo install rusmux
 
+* With shell script, for the specific version, see the [release page](https://github.com/MeirKriheli/rusmux/releases/latest/), e.g:
+
+        curl --proto '=https' --tlsv1.2 -LsSf https://github.com/MeirKriheli/rusmux/releases/download/v0.6.0/rusmux-installer.sh | sh
+
+
 
 ## Commands
 
