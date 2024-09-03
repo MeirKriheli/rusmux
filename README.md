@@ -1,23 +1,17 @@
 # Rusmux - tmux automation
 
-Built primarily to replace 
-[tmuxinator](https://github.com/tmuxinator/tmuxinator) while using it's
-yaml files.
+The main purpose of this project is to serve as a substitute for [tmuxinator](https://github.com/tmuxinator/tmuxinator), while still utilizing its yaml files. 
 
+`tmuxinator`, which is written in Ruby, has had instances of breaking due to updates in packages/gems, 
+having me scrambling for  a solution. 
 
-`tmuxinator` is written in Ruby, and various packages/gem upgrades broke
-it occasionally, having me scrambling for a fix.
+Furthermore, the process of installing it on different servers that lack a Ruby installation proved to be tedious.
 
-On top of that, installing it on various servers missing Ruby installation was
-a chore.
+Hence, [rusmux](https://github.com/MeirKriheli/rusmux) was created. It served as a chance for me to:
 
-Thus [rusmux](https://github.com/MeirKriheli/rusmux) was born. I've used it
-as an opportunity to:
-
-* Work with the existing `.yml` project files of `tmuxinator`.
-* Provide a single binary I can copy around.
-* Further my knowledge and understanding of [Rust](https://www.rust-lang.org/)
-  and the tooling around it.
+* Utilize the existing `.yml` project files from `tmuxinator`.
+* Generate a standalone binary that can be easily distributed.
+* Enhance my skills and comprehension of [Rust](https://www.rust-lang.org/) and its associated tools.
 
 ## Example
 
