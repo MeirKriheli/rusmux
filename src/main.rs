@@ -7,16 +7,28 @@ mod error;
 mod project_config;
 mod tmux;
 
-use app::{
-    actions::{self, NewProjectFrom},
-    cli,
-};
+use std::{thread::sleep, time::Duration};
+
+use app::actions::NewProjectFrom;
+use app::{actions, cli};
+use colored::Colorize;
 use error::AppErrorForDisplay;
 
 fn main() -> Result<(), AppErrorForDisplay> {
     let matches = cli::get_cli_command_parser().get_matches();
 
     if let Some(project_name) = matches.get_one::<String>("project") {
+        let message = format!(
+            "The option to start a project without the start command is \
+            deprecated and will be removed in the next version. see:\n\
+            https://github.com/MeirKriheli/rusmux/issues/14\n\n\
+            Please use:\n\
+            rusmux run {project_name}
+        "
+        )
+        .red();
+        eprintln!("{message}");
+        sleep(Duration::from_secs(3));
         return actions::run_project(project_name).map_err(|e| e.into());
     }
 
