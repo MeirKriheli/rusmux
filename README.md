@@ -51,7 +51,9 @@ windows:
 * Arch Linux users can install [rusmux from AUR](https://aur.archlinux.org/packages/rusmux),
   e.g. (using `paru`):
 
-        paru -S rusmux
+  ```sh
+  paru -S rusmux
+  ```
 
 * Get a compiled binary from the
   [Releases](https://github.com/MeirKriheli/rusmux/releases) page and place it
@@ -59,11 +61,15 @@ windows:
 
 * With `cargo`:
 
-        cargo install rusmux
+  ```sh
+  cargo install rusmux
+  ```
 
 * With shell script, for the specific version, see the [release page](https://github.com/MeirKriheli/rusmux/releases/latest/), e.g:
 
-        curl --proto '=https' --tlsv1.2 -LsSf https://github.com/MeirKriheli/rusmux/releases/download/v0.6.0/rusmux-installer.sh | sh
+  ```sh
+  curl --proto '=https' --tlsv1.2 -LsSf https://github.com/MeirKriheli/rusmux/releases/download/v0.6.0/rusmux-installer.sh | sh
+  ```
 
 
 
@@ -71,50 +77,73 @@ windows:
 
 * Run a project
 
-        rusmux [project]
+  ```sh
+  rusmux [project]
+  ```
 
   or 
 
-        rusmux run [project]
-        rusmux start [project]
+  ```sh
+  rusmux run [project]
+  rusmux start [project]
+  ```
 
 * List all existing projects
 
-        rusmux list
+  ```sh
+  rusmux list
+  ```
   
 * Output shell commands for a project 
 
-        rusmux debug [project]
+  ```sh
+  rusmux debug [project]
+  ```
 
 * Edit an existing project (`$EDITOR` should be set)
 
-        rusmux edit [project]
+  ```sh
+  rusmux edit [project]
+  ```
 
 * Stop project's session
 
-        rusmux stop [project]
-        rusmux kill [project]
+  ```sh
+  rusmux stop [project]
+  rusmux kill [project]
+  ```
 
 * Delete an existing project (after confirmation)
 
-        rusmux delete [project]
+  ```sh
+  rusmux delete [project]
+  ```
 
 * Create a new project, and open it in an editor (`$EDITOR` should be set)
 
-        rusmux new [project]
+  ```sh
+  rusmux new [project]
+  ```
 
   This creates the project from default template. To create one with just the
   project name:
 
-        rusmux new [project] --blank
+  ```sh
+  rusmux new [project] --blank
+  ```
 
 * Copy an existing project to a new one and edit it (`$EDITOR` should be set)
 
-        rusmux copy [existing] [new]
+  ```sh
+  rusmux copy [existing] [new]
+  ```
+
 
 * Check your environment for potential issues
 
-        rusmux doctor
+  ```sh
+  rusmux doctor
+  ```
 
   Checks for `tmux` in `$PATH` and `$SHELL` & `$EDITOR` are set.
 
