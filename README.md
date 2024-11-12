@@ -78,15 +78,17 @@ windows:
 * Run a project
 
   ```sh
-  rusmux [project]
+  rusmux run [project]
+  rusmux start [project]
   ```
 
   or 
 
   ```sh
-  rusmux run [project]
-  rusmux start [project]
+  rusmux [project]
   ```
+
+  > **Note** This form is deprecated and will be removed in the next version, see #14.
 
 * List all existing projects
 
