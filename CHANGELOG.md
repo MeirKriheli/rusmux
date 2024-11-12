@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.1] - 2024-11-12
+
+### Bug Fixes
+
+- Fixed issue of cargo doc generating warning (proper sh blocks)
+
+### Documentation
+
+- Rephrased README, fixed typo, closes #12
+- Described shell script installation method
+- Added deprecation note to README
+
+### Features
+
+- Added warning for running without start command, see #14
+
+### Miscellaneous Tasks
+
+- Updated cargo dist
+- Updated crates
+
 ## [0.6.0] - 2024-08-27
 
 ### Bug Fixes
@@ -18,6 +39,7 @@ All notable changes to this project will be documented in this file.
 - Updated dependencies
 - Cleaned some clippy warnings
 - Updated cargo-dist
+- Release rusmux version 0.6.0
 
 ## [0.5.0] - 2024-04-02
 
