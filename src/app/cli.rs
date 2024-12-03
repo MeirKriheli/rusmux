@@ -1,84 +1,65 @@
 //! CLI arguments parser.
-use clap::{command, Arg, ArgAction, Command};
+use clap::command;
 
-/// Returns [`clap::Command`] for the CLI application.
-pub(crate) fn get_cli_command_parser() -> Command {
-    command!()
-        .arg_required_else_help(true)
-        .subcommand(Command::new("list").about("List all projects"))
-        .subcommand(
-            Command::new("debug")
-                .about("Output shell commands for a project")
-                .arg(
-                    Arg::new("project")
-                        .help("Project name or filesystem path")
-                        .required(true),
-                ),
-        )
-        .subcommand(
-            Command::new("run")
-                .alias("start")
-                .about("Run the project commands")
-                .arg(
-                    Arg::new("project")
-                        .help("Project name or filesystem path")
-                        .required(true),
-                ),
-        )
-        .subcommand(
-            Command::new("copy")
-                .about("Copy an existing project to a new one and edit it")
-                .arg(
-                    Arg::new("existing")
-                        .help("Existing Project name or filesystem path")
-                        .required(true),
-                )
-                .arg(
-                    Arg::new("new")
-                        .help("New Project name or filesystem path")
-                        .required(true),
-                ),
-        )
-        .subcommand(
-            Command::new("edit").about("Edit an existing project").arg(
-                Arg::new("project")
-                    .help("Project name or filesystem path")
-                    .required(true),
-            ),
-        )
-        .subcommand(
-            Command::new("delete")
-                .about("Delete an existing project")
-                .arg(
-                    Arg::new("project")
-                        .help("Project name or filesystem path")
-                        .required(true),
-                ),
-        )
-        .subcommand(
-            Command::new("new")
-                .about("Create a new project")
-                .arg(
-                    Arg::new("project")
-                        .help("Project name or filesystem path")
-                        .required(true),
-                )
-                .arg(
-                    Arg::new("blank")
-                        .long("blank")
-                        .action(ArgAction::SetTrue)
-                        .help("Don't use a template for the file"),
-                ),
-        )
-        .subcommand(
-            Command::new("stop")
-                .alias("kill")
-                .about("Stop the project's session")
-                .arg(
-                    Arg::new("project")
-                        .help("Project name or filesystem path")
-                        .required(true),
-                ),
-        )
-        .subcommand(Command::new("doctor").about("Check your configuration"))
+#[derive(Debug, Parser)]
+#[command(version, about, arg_required_else_help = true)]
+pub struct Cli {
+    #[clap(subcommand)]
+    pub commands: Commands,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum Commands {
+    /// Run the project's commands
+    #[command(alias = "start", arg_required_else_help = true)]
+    Run {
+        /// Project name or filesystem path
+        project: String,
+    },
+    /// Stop the project's session
+    #[command(alias = "kill", arg_required_else_help = true)]
+    Stop {
+        /// Project name or filesystem path
+        project: String,
+    },
+    /// Output shell commands for a project
+    #[command(arg_required_else_help = true)]
+    Debug {
+        /// Project name or filesystem path
+        project: String,
+    },
+    /// Edit an existing project
+    #[command(arg_required_else_help = true)]
+    Edit {
+        /// Project name or filesystem path
+        project: String,
+    },
+    /// Delete an existing project
+    #[command(arg_required_else_help = true)]
+    Delete {
+        /// Project name or filesystem path
+        project: String,
+    },
+    /// Create a new project
+    #[command(arg_required_else_help = true)]
+    New {
+        /// Project name or filesystem path
+        project: String,
+        /// Don't use a template for the file
+        #[arg(long)]
+        blank: bool,
+    },
+    /// List all projects in the config directory
+    List,
+    /// Copy an existing project to a new one and edit it
+    Copy {
+        /// Existing Project name or filesystem path
+        #[arg(required = true)]
+        existing: String,
+        /// New Project name or filesystem path
+        #[arg(required = true)]
+        new: String,
+    },
+    /// Check your environment's configuration
+    Doctor,
 }
