@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2024-12-03
+
+### Features
+
+- [**breaking**] Changed optional run command to mandatory, fixes #14
+- Added tabs and color to `doctor` command
+
+### Refactor
+
+- Changed Cli from builder to derive
+
 ## [0.6.1] - 2024-11-12
 
 ### Bug Fixes
@@ -22,6 +33,7 @@ All notable changes to this project will be documented in this file.
 
 - Updated cargo dist
 - Updated crates
+- Release rusmux version 0.6.1
 
 ## [0.6.0] - 2024-08-27
 
