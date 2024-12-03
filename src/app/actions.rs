@@ -5,6 +5,7 @@ use crate::{
     project_config::ProjectConfig,
     tmux::{self, TmuxProject},
 };
+use colored::{ColoredString, Colorize};
 use dialoguer::Confirm;
 use glob::glob;
 use std::{env, fs::copy, process::Command};
@@ -67,11 +68,11 @@ pub fn run_project(project_name: &str) -> Result<(), AppError> {
 
 #[doc(hidden)]
 /// Helper mapping a [`bool`] value to `"Yes"` or `"No"`.
-fn bool_to_yesno(val: bool) -> &'static str {
+fn bool_to_yesno(val: bool) -> ColoredString {
     if val {
-        "Yes"
+        "Yes".green()
     } else {
-        "No"
+        "No".red()
     }
 }
 
@@ -86,7 +87,7 @@ pub(crate) fn check_config() -> Result<(), AppError> {
     let have_shell = env::var("SHELL").is_ok();
 
     println!(
-        "tmux is installed? {}\n$EDITOR is set? {}\n$SHELL is set? {}",
+        "tmux found?\t{}\n$EDITOR is set?\t{}\n$SHELL is set?\t{}",
         bool_to_yesno(have_tmux),
         bool_to_yesno(have_editor),
         bool_to_yesno(have_shell)
