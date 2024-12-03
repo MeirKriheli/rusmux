@@ -68,7 +68,7 @@ windows:
 * With shell script, for the specific version, see the [release page](https://github.com/MeirKriheli/rusmux/releases/latest/), e.g:
 
   ```sh
-  curl --proto '=https' --tlsv1.2 -LsSf https://github.com/MeirKriheli/rusmux/releases/download/v0.6.0/rusmux-installer.sh | sh
+  curl --proto '=https' --tlsv1.2 -LsSf https://github.com/MeirKriheli/rusmux/releases/download/v0.x.y/rusmux-installer.sh | sh
   ```
 
 
@@ -81,14 +81,6 @@ windows:
   rusmux run [project]
   rusmux start [project]
   ```
-
-  or 
-
-  ```sh
-  rusmux [project]
-  ```
-
-  > **Note** This form is deprecated and will be removed in the next version, see #14.
 
 * List all existing projects
 

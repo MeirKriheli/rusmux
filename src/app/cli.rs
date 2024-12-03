@@ -5,12 +5,6 @@ use clap::{command, Arg, ArgAction, Command};
 pub(crate) fn get_cli_command_parser() -> Command {
     command!()
         .arg_required_else_help(true)
-        .subcommand_negates_reqs(true)
-        .arg(
-            Arg::new("project")
-                .help("Project name or filesystem path")
-                .required(true),
-        )
         .subcommand(Command::new("list").about("List all projects"))
         .subcommand(
             Command::new("debug")
