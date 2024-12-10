@@ -1,13 +1,10 @@
 //! Handles the command requested by the CLI.
-use super::config;
-use crate::{
-    error::AppError,
-    project_config::ProjectConfig,
-    tmux::{self, TmuxProject},
-};
+use super::config::{self, get_projects};
+use crate::error::AppError;
+use crate::project_config::ProjectConfig;
+use crate::tmux::{self, TmuxProject};
 use colored::{ColoredString, Colorize};
 use dialoguer::Confirm;
-use glob::glob;
 use std::{env, fs::copy, process::Command};
 use std::{fs::remove_file, io::prelude::*};
 use std::{fs::File, path::Path};
@@ -35,13 +32,9 @@ macro_rules! default_template {
 
 /// List the projects in the configuration directory.
 pub(crate) fn list_projects() -> Result<(), AppError> {
-    let pattern = config::get_path("*.yml")?;
-
-    for project in glob(&pattern.to_string_lossy()).expect("Failed to glob config dir") {
-        match project {
-            Ok(path) => println!("{}", &path.file_stem().unwrap().to_string_lossy()),
-            Err(e) => println!("{e:?}"),
-        }
+    let projects = get_projects()?;
+    for project in projects {
+        println!("{project}");
     }
 
     Ok(())

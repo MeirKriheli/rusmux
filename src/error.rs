@@ -62,6 +62,8 @@ pub enum AppError {
     /// Error getting project name from file path
     #[error("Can not get project name from file path {0}")]
     GetProjectNameFromFilePath(String),
+    #[error("Failed to glob config dir {0}")]
+    ProjectGlob(#[from] glob::PatternError),
 }
 
 /// Used for displaying the error on exit.

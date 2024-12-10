@@ -6,7 +6,9 @@ use std::fs::{create_dir_all, File};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 
+use crate::app::config;
 use crate::error::AppError;
+use glob::glob;
 
 /// Returns the path of a file/pattern inside the configuration directory.
 pub fn get_path(pattern: &str) -> Result<PathBuf, AppError> {
@@ -49,4 +51,23 @@ pub fn get_project_yaml(project_name: &str) -> Result<Value, AppError> {
     let de = serde_yaml::Deserializer::from_str(&contents);
     Value::deserialize(de)
         .map_err(|e| AppError::YamlParse(project_file_path.clone(), format!("{e}")))
+}
+
+/// Get existing projects in the configuration directory.
+pub fn get_projects() -> Result<Vec<String>, AppError> {
+    let pattern = config::get_path("*.yml")?;
+
+    let projects = glob(&pattern.to_string_lossy())?
+        .filter_map(|path| {
+            if let Ok(path) = path {
+                path.file_stem()
+                    .map(|stem| stem.to_string_lossy().into_owned())
+            } else {
+                println!("{path:?}");
+                None
+            }
+        })
+        .collect();
+
+    Ok(projects)
 }
