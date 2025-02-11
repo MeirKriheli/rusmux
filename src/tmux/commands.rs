@@ -44,13 +44,13 @@ pub(crate) enum Commands<'a> {
         session_name: &'a str,
         window_name: &'a str,
         window_index: usize,
-        project_root: &'a Option<String>,
+        window_root: Option<String>,
     },
     /// `split-window` command.
     SplitWindow {
         session_name: &'a str,
         window_index: usize,
-        project_root: &'a Option<String>,
+        window_root: Option<String>,
     },
     /// `select-layout` command.
     SelectLayout {
@@ -167,12 +167,12 @@ impl<'a> Commands<'a> {
         session_name: &str,
         window_name: &str,
         window_index: usize,
-        project_root: &Option<String>,
+        window_root: &Option<String>,
     ) -> fmt::Result {
-        let cd_root = Commands::get_cd_root_flag(project_root);
+        let cd_root = Commands::get_cd_root_flag(window_root);
         write!(
             f,
-            "\n# Create \"{window_name}\" window \n{TMUX_BIN} new-window{cd_root} -t {session_name}:{window_index} -n {window_name}"
+            "\n# Create \"{window_name}\" window \n{TMUX_BIN} new-window{cd_root} -k -t {session_name}:{window_index} -n {window_name}"
         )
     }
 
@@ -180,9 +180,9 @@ impl<'a> Commands<'a> {
         f: &mut fmt::Formatter,
         session_name: &str,
         window_index: usize,
-        project_root: &Option<String>,
+        window_root: &Option<String>,
     ) -> Result<(), fmt::Error> {
-        let cd_root = Commands::get_cd_root_flag(project_root);
+        let cd_root = Commands::get_cd_root_flag(window_root);
         write!(
             f,
             "{TMUX_BIN} splitw{cd_root} -t {session_name}:{window_index}"
@@ -289,13 +289,13 @@ impl<'a> Commands<'a> {
                 session_name,
                 window_name,
                 window_index,
-                project_root,
-            } => Commands::run_new_window(session_name, window_name, *window_index, project_root),
+                window_root,
+            } => Commands::run_new_window(session_name, window_name, *window_index, window_root),
             Commands::SplitWindow {
                 session_name,
                 window_index,
-                project_root,
-            } => Commands::run_split_window(session_name, *window_index, project_root),
+                window_root,
+            } => Commands::run_split_window(session_name, *window_index, window_root),
             Commands::SelectLayout {
                 session_name,
                 window_index,
@@ -398,12 +398,12 @@ impl<'a> Commands<'a> {
         session_name: &str,
         window_name: &str,
         window_index: usize,
-        project_root: &Option<String>,
+        window_root: &Option<String>,
     ) -> Result<(), TmuxError> {
         let target_name = format!("{session_name}:{window_index}");
         let expanded: String;
-        let mut args = vec!["new-window", "-t", &target_name, "-n", window_name];
-        if let Some(root_dir) = project_root {
+        let mut args = vec!["new-window", "-k", "-t", &target_name, "-n", window_name];
+        if let Some(root_dir) = window_root {
             args.push("-c");
             expanded = shellexpand::full(root_dir)?.to_string();
             args.push(&expanded);
@@ -422,12 +422,12 @@ impl<'a> Commands<'a> {
     fn run_split_window(
         session_name: &str,
         window_index: usize,
-        project_root: &Option<String>,
+        window_root: &Option<String>,
     ) -> Result<(), TmuxError> {
         let target_name = format!("{session_name}:{window_index}");
         let mut args = vec!["splitw", "-t", &target_name];
         let expanded: String;
-        if let Some(root_dir) = project_root {
+        if let Some(root_dir) = window_root {
             args.push("-c");
             expanded = shellexpand::full(root_dir)?.to_string();
             args.push(&expanded);
@@ -596,15 +596,13 @@ impl<'a> fmt::Display for Commands<'a> {
                 session_name,
                 window_name,
                 window_index,
-                project_root,
-            } => {
-                Commands::fmt_new_window(f, session_name, window_name, *window_index, project_root)
-            }
+                window_root,
+            } => Commands::fmt_new_window(f, session_name, window_name, *window_index, window_root),
             Commands::SplitWindow {
                 session_name,
                 window_index,
-                project_root,
-            } => Commands::fmt_split_window(f, session_name, *window_index, project_root),
+                window_root,
+            } => Commands::fmt_split_window(f, session_name, *window_index, window_root),
             Commands::SelectLayout {
                 session_name,
                 window_index,

@@ -60,6 +60,11 @@ pub struct Window {
     pub panes: Vec<Option<Vec<String>>>,
     /// Per window options
     pub options: Option<HashMap<String, String>>,
+    /// Root directory for the window (optional). If exists will be used
+    /// as the window's working directory with `-c` flag.
+    ///
+    /// Takes precedence over the project_root.
+    pub root: Option<String>,
 }
 
 impl TryFrom<String> for Window {
@@ -100,6 +105,7 @@ impl<'de> Visitor<'de> for WindowVisitor {
             layout: "tiled".into(),
             panes: vec![],
             options: None,
+            root: None,
         };
 
         match val {
@@ -110,6 +116,10 @@ impl<'de> Visitor<'de> for WindowVisitor {
                     .get(Value::String("layout".into()))
                     .map(|v| v.as_str().unwrap().into())
                     .unwrap_or_else(|| "tiled".into());
+
+                w.root = map
+                    .get(Value::String("root".into()))
+                    .map(|v| v.as_str().unwrap().into());
 
                 w.options = map.get(Value::String("options".into())).map(|v| {
                     v.as_mapping()
@@ -280,5 +290,21 @@ window-with-options:
         assert_eq!(options.len(), 2);
         assert_eq!(options.get("main-pane-height"), Some(&"70%".to_string()));
         assert_eq!(options.get("main-pane-width"), Some(&"75%".to_string()));
+    }
+
+    #[test]
+    fn window_root() {
+        let yaml = "\
+window-with-root:
+    root: /home/dummy/void";
+        let window = Window::try_from(yaml.to_string()).unwrap();
+
+        assert_eq!(window.root, Some("/home/dummy/void".into()));
+
+        let yaml = "\
+window-wiout-root:";
+        let window = Window::try_from(yaml.to_string()).unwrap();
+
+        assert_eq!(window.root, None);
     }
 }

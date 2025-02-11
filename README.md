@@ -33,6 +33,7 @@ windows:
   - editor: vim
   - shells:
       layout: main-vertical
+      root: ~/src/demo/code  # Optional per window root overriding `project_root`
       options:  # per window options
         main-pane-width: 60%
       panes:

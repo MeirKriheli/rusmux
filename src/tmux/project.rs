@@ -221,16 +221,15 @@ impl<'a> TmuxProject<'a> {
     fn get_window_commands(&'a self, idx: usize, w: &'a Window) -> Vec<Commands> {
         let mut commands = Vec::new();
         let project_name = &self.project.project_name;
+        let window_root = w.root.clone().or_else(|| self.project.project_root.clone());
 
         let window_idx = idx + self.tmux.base_index;
-        if idx > 0 {
-            commands.push(Commands::NewWindow {
-                session_name: project_name,
-                window_name: w.name.as_ref(),
-                window_index: window_idx,
-                project_root: &self.project.project_root,
-            });
-        }
+        commands.push(Commands::NewWindow {
+            session_name: project_name,
+            window_name: w.name.as_ref(),
+            window_index: window_idx,
+            window_root: window_root.clone(),
+        });
 
         if let Some(options) = &w.options {
             for (option_name, value) in options.iter() {
@@ -249,7 +248,7 @@ impl<'a> TmuxProject<'a> {
                 commands.push(Commands::SplitWindow {
                     session_name: project_name,
                     window_index: window_idx,
-                    project_root: &self.project.project_root,
+                    window_root: window_root.clone(),
                 })
             }
             if let Some(pre_window) = &self.project.pre_window {
