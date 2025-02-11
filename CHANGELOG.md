@@ -2,12 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2025-02-11
+
+### Features
+
+- Added window root option, closes #16
+
+### Miscellaneous Tasks
+
+- Upgraded dependencies (colored, directories)
+
 ## [0.7.0] - 2024-12-03
 
 ### Features
 
 - [**breaking**] Changed optional run command to mandatory, fixes #14
 - Added tabs and color to `doctor` command
+
+### Miscellaneous Tasks
+
+- Release rusmux version 0.7.0
 
 ### Refactor
 
