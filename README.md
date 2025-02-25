@@ -147,3 +147,18 @@ windows:
 >
 > * A simple name, like `my_project`, `awesome_server`, which will be created with a `yaml` extension in the config directory.
 > * A path to a file (determined by an extension and/or path separator), e.g. `~/projects/my_project/session.yaml`.
+
+
+## Shell completion
+
+Under the `completions` directory you'll find the completion scripts for `bash`, `zsh` and `fish`.
+
+Copy them to the relevant directories for your shell and OS. For system wide completions (Arch Linux in this example):
+
+```sh
+sudo cp completions/rusmux.bash /usr/share/bash-completion/completions/rusmux
+sudo cp completions/rusmux.zsh /usr/share/zsh/site-functions/_rusmux
+sudo cp completions/rusmux.fish /usr/share/fish/vendor_completions.d/rusmux.fish
+```
+
+For user directories, see your shell documentation.
