@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.1] - 2025-02-25
+
+### Documentation
+
+- Added shell completion info to README
+
+### Features
+
+- Added shell completion scripts, closes #15
+
 ## [0.8.0] - 2025-02-11
 
 ### Features
@@ -11,6 +21,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Upgraded dependencies (colored, directories)
+- Release rusmux version 0.8.0
 
 ## [0.7.0] - 2024-12-03
 
