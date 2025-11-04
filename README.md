@@ -85,6 +85,13 @@ windows:
   rusmux start [project]
   ```
 
+  A path to a `yaml` formatted file containing the project definition can be
+  specified as well:
+
+  ```sh
+  rusmux run ~/projects/my_project/session.yaml
+  ```
+
 - List all existing projects
 
   ```sh
