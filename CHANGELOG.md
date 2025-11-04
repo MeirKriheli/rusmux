@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.3] - 2025-11-04
+
+### Features
+
+- Added cp alias to copy command
+
+### Miscellaneous Tasks
+
+- Updated runner image to Ubuntu 22.04
+
 ## [0.8.2] - 2025-11-04
 
 ### Bug Fixes
