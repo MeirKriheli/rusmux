@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.4] - 2025-11-04
+
+### Bug Fixes
+
+- Updated cargo-dist
+
 ## [0.8.3] - 2025-11-04
 
 ### Features
