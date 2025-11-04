@@ -4,7 +4,7 @@
 //! Uses 2 custom visitors:
 //!
 //! * `WindowVisitor` - Handles cases where a window can be a string (single
-//!    pane command), or a vector of several panes.
+//!   pane command), or a vector of several panes.
 //! * `OptionalVecOrStringVisitor` - Handles cases where the value is optional
 //!   and can contain a string or a vector of strings.
 //!

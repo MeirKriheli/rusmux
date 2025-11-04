@@ -117,7 +117,7 @@ impl<'a> TmuxProject<'a> {
     }
 
     /// Helper returning the [`Commands`] for creating the project's session.
-    fn get_commands(&'a self) -> Vec<Commands> {
+    fn get_commands(&self) -> Vec<Commands<'_>> {
         let project_name = &self.project.project_name;
 
         let first_window_name = self
@@ -192,7 +192,7 @@ impl<'a> TmuxProject<'a> {
 
     /// Helper returning the [`Commands`] for attaching to an
     /// already running session.
-    fn get_attach_session_command(&self) -> Commands {
+    fn get_attach_session_command(&self) -> Commands<'_> {
         Commands::AttachSession {
             session_name: &self.project.project_name,
         }
@@ -200,7 +200,7 @@ impl<'a> TmuxProject<'a> {
 
     /// Helper returning the [`Commands`] for stopping to an
     /// already running session.
-    fn get_stop_session_commands(&self) -> Vec<Commands> {
+    fn get_stop_session_commands(&self) -> Vec<Commands<'_>> {
         vec![
             Commands::StopSession {
                 session_name: &self.project.project_name,
@@ -218,7 +218,7 @@ impl<'a> TmuxProject<'a> {
     ///
     /// The index of the window, `idx`, is `0` based, and is adjusted for
     /// the current tmux configuration for `base-index` and `pane-base-index`.
-    fn get_window_commands(&'a self, idx: usize, w: &'a Window) -> Vec<Commands> {
+    fn get_window_commands(&'a self, idx: usize, w: &'a Window) -> Vec<Commands<'a>> {
         let mut commands = Vec::new();
         let project_name = &self.project.project_name;
         let window_root = w.root.clone().or_else(|| self.project.project_root.clone());
@@ -317,7 +317,7 @@ impl<'a> TmuxProject<'a> {
     }
 
     /// Get to hook commands to correctly apply layouts
-    fn get_layout_hooks_command(&self) -> Option<Commands> {
+    fn get_layout_hooks_command(&self) -> Option<Commands<'_>> {
         // No windows? No need to set layouts
         self.project.windows.as_ref()?;
 
