@@ -20,6 +20,7 @@ complete -c rusmux -n __fish_use_subcommand -a new -d "Create a new project"
 complete -c rusmux -n __fish_use_subcommand -a list -d "List all projects in the config directory"
 complete -c rusmux -n __fish_use_subcommand -a ls -d "Alias for list"
 complete -c rusmux -n __fish_use_subcommand -a copy -d "Copy an existing project to a new one and edit it"
+complete -c rusmux -n __fish_use_subcommand -a cp -d "Alias for copy"
 complete -c rusmux -n __fish_use_subcommand -a doctor -d "Check your environment's configuration"
 
 # Command-specific completions using rusmux list output
@@ -43,8 +44,8 @@ complete -c rusmux -n "__fish_seen_subcommand_from new" -r -d "New project name"
 complete -c rusmux -n "__fish_seen_subcommand_from new" -l blank -d "Don't use a template for the file"
 
 # copy - requires existing project from rusmux list and new project name
-complete -c rusmux -n "__fish_seen_subcommand_from copy" -r -a "(__rusmux_projects)" -d "Existing project name from rusmux list"
-complete -c rusmux -n "__fish_seen_subcommand_from copy; and __fish_prev_arg_in (__rusmux_projects)" -r -d "New project name"
+complete -c rusmux -n "__fish_seen_subcommand_from copy cp" -r -a "(__rusmux_projects)" -d "Existing project name from rusmux list"
+complete -c rusmux -n "__fish_seen_subcommand_from copy cp; and __fish_prev_arg_in (__rusmux_projects)" -r -d "New project name"
 
 # Version and help
 complete -c rusmux -s v -l version -d "Show version information"

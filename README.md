@@ -141,6 +141,7 @@ windows:
 
   ```sh
   rusmux copy [existing] [new]
+  rusmux cp [existing] [new]
   ```
 
 - Check your environment for potential issues

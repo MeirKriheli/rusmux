@@ -53,6 +53,7 @@ pub enum Commands {
     #[command(visible_alias = "ls")]
     List,
     /// Copy an existing project to a new one and edit it
+    #[command(visible_alias = "cp")]
     Copy {
         /// Existing Project name or filesystem path
         #[arg(required = true)]

@@ -10,7 +10,7 @@ _rusmux() {
     'delete:Delete an existing project'
     'new:Create a new project'
     'list:List all projects in the config directory (alias: ls)'
-    'copy:Copy an existing project to a new one and edit it'
+    'copy:Copy an existing project to a new one and edit it (alias: cp)'
     'doctor:Check your environment’s configuration'
   )
 
@@ -36,7 +36,7 @@ _rusmux_args() {
         '1:project:' \
         '--blank[Don’t use a template for the file]'
       ;;
-    copy)
+    copy|cp)
       _arguments '1:existing project:(${projects})' '2:new project:'
       ;;
   esac
