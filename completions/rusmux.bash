@@ -6,7 +6,7 @@ _rusmux() {
   prev="${COMP_WORDS[COMP_CWORD - 1]}"
 
   commands="run stop debug edit delete new list copy doctor"
-  aliases="start kill"
+  aliases="start kill ls"
 
   if [[ "$prev" == "rusmux" ]]; then
     COMPREPLY=($(compgen -W "$commands $aliases" -- "$cur"))

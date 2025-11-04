@@ -50,6 +50,7 @@ pub enum Commands {
         blank: bool,
     },
     /// List all projects in the config directory
+    #[command(visible_alias = "ls")]
     List,
     /// Copy an existing project to a new one and edit it
     Copy {

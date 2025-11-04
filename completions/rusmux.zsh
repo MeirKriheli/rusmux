@@ -9,7 +9,7 @@ _rusmux() {
     'edit:Edit an existing project'
     'delete:Delete an existing project'
     'new:Create a new project'
-    'list:List all projects in the config directory'
+    'list:List all projects in the config directory (alias: ls)'
     'copy:Copy an existing project to a new one and edit it'
     'doctor:Check your environment’s configuration'
   )

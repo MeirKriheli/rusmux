@@ -89,6 +89,7 @@ windows:
 
   ```sh
   rusmux list
+  rusmux ls
   ```
 
 - Output shell commands for a project

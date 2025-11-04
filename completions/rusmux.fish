@@ -18,6 +18,7 @@ complete -c rusmux -n __fish_use_subcommand -a edit -d "Edit an existing project
 complete -c rusmux -n __fish_use_subcommand -a delete -d "Delete an existing project"
 complete -c rusmux -n __fish_use_subcommand -a new -d "Create a new project"
 complete -c rusmux -n __fish_use_subcommand -a list -d "List all projects in the config directory"
+complete -c rusmux -n __fish_use_subcommand -a ls -d "Alias for list"
 complete -c rusmux -n __fish_use_subcommand -a copy -d "Copy an existing project to a new one and edit it"
 complete -c rusmux -n __fish_use_subcommand -a doctor -d "Check your environment's configuration"
 
