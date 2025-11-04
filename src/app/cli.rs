@@ -11,13 +11,13 @@ pub struct Cli {
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     /// Run the project's commands
-    #[command(alias = "start", arg_required_else_help = true)]
+    #[command(visible_alias = "start", arg_required_else_help = true)]
     Run {
         /// Project name or filesystem path
         project: String,
     },
     /// Stop the project's session
-    #[command(alias = "kill", arg_required_else_help = true)]
+    #[command(visible_alias = "kill", arg_required_else_help = true)]
     Stop {
         /// Project name or filesystem path
         project: String,
